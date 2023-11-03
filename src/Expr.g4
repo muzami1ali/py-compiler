@@ -1,9 +1,7 @@
 grammar Expr;
-prog : function EOF;
-print: 'print';
-function: print paren num paren newl ;
-num : Number;
-newl: Newline;
-Number : [0-9]+;
-Newline : [\n];
-paren : '(' | ')';
+prog : func EOF;
+func: atom op atom;
+atom : INT ;
+INT : [0-9]+ ;
+WS : [ \t\n\r]+ -> skip ;
+op: '+' | '-' | '/' | '*' ;

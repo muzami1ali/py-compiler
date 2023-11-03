@@ -2,7 +2,7 @@ import sys
 from antlr4 import *
 from ExprLexer import ExprLexer
 from ExprParser import ExprParser
-from ListenerInterp import ListenerInterp
+from VisitorInterp import VisitorInterp
 
 def main(argv):
     input_stream = FileStream(argv[1])
@@ -14,9 +14,8 @@ def main(argv):
         print("syntax errors")
     else:
     #    print(tree.toStringTree(recog=parser)) 
-        linterp = ListenerInterp()
-        walker = ParseTreeWalker()
-        walker.walk(linterp, tree)
+        vinterp = VisitorInterp()
+        vinterp.visit(tree)
 
 if __name__ == '__main__':
     main(sys.argv)

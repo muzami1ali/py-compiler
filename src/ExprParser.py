@@ -10,14 +10,11 @@ else:
 
 def serializedATN():
     return [
-        4,1,5,30,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,1,0,1,0,
-        1,0,1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,3,1,3,1,4,1,4,1,5,1,5,1,5,
-        0,0,6,0,2,4,6,8,10,0,1,1,0,2,3,23,0,12,1,0,0,0,2,15,1,0,0,0,4,17,
-        1,0,0,0,6,23,1,0,0,0,8,25,1,0,0,0,10,27,1,0,0,0,12,13,3,4,2,0,13,
-        14,5,0,0,1,14,1,1,0,0,0,15,16,5,1,0,0,16,3,1,0,0,0,17,18,3,2,1,0,
-        18,19,3,10,5,0,19,20,3,6,3,0,20,21,3,10,5,0,21,22,3,8,4,0,22,5,1,
-        0,0,0,23,24,5,4,0,0,24,7,1,0,0,0,25,26,5,5,0,0,26,9,1,0,0,0,27,28,
-        7,0,0,0,28,11,1,0,0,0,0
+        4,1,6,20,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,1,0,1,0,1,1,1,1,1,1,
+        1,1,1,2,1,2,1,3,1,3,1,3,0,0,4,0,2,4,6,0,1,1,0,1,4,15,0,8,1,0,0,0,
+        2,11,1,0,0,0,4,15,1,0,0,0,6,17,1,0,0,0,8,9,3,2,1,0,9,10,5,0,0,1,
+        10,1,1,0,0,0,11,12,3,4,2,0,12,13,3,6,3,0,13,14,3,4,2,0,14,3,1,0,
+        0,0,15,16,5,5,0,0,16,5,1,0,0,0,17,18,7,0,0,0,18,7,1,0,0,0,0
     ]
 
 class ExprParser ( Parser ):
@@ -30,26 +27,25 @@ class ExprParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'print'", "'('", "')'" ]
+    literalNames = [ "<INVALID>", "'+'", "'-'", "'/'", "'*'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "Number", "Newline" ]
+                      "<INVALID>", "INT", "WS" ]
 
     RULE_prog = 0
-    RULE_print = 1
-    RULE_function = 2
-    RULE_num = 3
-    RULE_newl = 4
-    RULE_paren = 5
+    RULE_func = 1
+    RULE_atom = 2
+    RULE_op = 3
 
-    ruleNames =  [ "prog", "print", "function", "num", "newl", "paren" ]
+    ruleNames =  [ "prog", "func", "atom", "op" ]
 
     EOF = Token.EOF
     T__0=1
     T__1=2
     T__2=3
-    Number=4
-    Newline=5
+    T__3=4
+    INT=5
+    WS=6
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -67,8 +63,8 @@ class ExprParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def function(self):
-            return self.getTypedRuleContext(ExprParser.FunctionContext,0)
+        def func(self):
+            return self.getTypedRuleContext(ExprParser.FuncContext,0)
 
 
         def EOF(self):
@@ -85,6 +81,12 @@ class ExprParser ( Parser ):
             if hasattr( listener, "exitProg" ):
                 listener.exitProg(self)
 
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitProg" ):
+                return visitor.visitProg(self)
+            else:
+                return visitor.visitChildren(self)
+
 
 
 
@@ -94,9 +96,9 @@ class ExprParser ( Parser ):
         self.enterRule(localctx, 0, self.RULE_prog)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 12
-            self.function()
-            self.state = 13
+            self.state = 8
+            self.func()
+            self.state = 9
             self.match(ExprParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
@@ -107,36 +109,103 @@ class ExprParser ( Parser ):
         return localctx
 
 
-    class PrintContext(ParserRuleContext):
+    class FuncContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
+        def atom(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(ExprParser.AtomContext)
+            else:
+                return self.getTypedRuleContext(ExprParser.AtomContext,i)
+
+
+        def op(self):
+            return self.getTypedRuleContext(ExprParser.OpContext,0)
+
 
         def getRuleIndex(self):
-            return ExprParser.RULE_print
+            return ExprParser.RULE_func
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterPrint" ):
-                listener.enterPrint(self)
+            if hasattr( listener, "enterFunc" ):
+                listener.enterFunc(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitPrint" ):
-                listener.exitPrint(self)
+            if hasattr( listener, "exitFunc" ):
+                listener.exitFunc(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitFunc" ):
+                return visitor.visitFunc(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
 
-    def print_(self):
+    def func(self):
 
-        localctx = ExprParser.PrintContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 2, self.RULE_print)
+        localctx = ExprParser.FuncContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 2, self.RULE_func)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 11
+            self.atom()
+            self.state = 12
+            self.op()
+            self.state = 13
+            self.atom()
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class AtomContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def INT(self):
+            return self.getToken(ExprParser.INT, 0)
+
+        def getRuleIndex(self):
+            return ExprParser.RULE_atom
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterAtom" ):
+                listener.enterAtom(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitAtom" ):
+                listener.exitAtom(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAtom" ):
+                return visitor.visitAtom(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def atom(self):
+
+        localctx = ExprParser.AtomContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 4, self.RULE_atom)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 15
-            self.match(ExprParser.T__0)
+            self.match(ExprParser.INT)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -146,185 +215,44 @@ class ExprParser ( Parser ):
         return localctx
 
 
-    class FunctionContext(ParserRuleContext):
+    class OpContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def print_(self):
-            return self.getTypedRuleContext(ExprParser.PrintContext,0)
 
+        def getRuleIndex(self):
+            return ExprParser.RULE_op
 
-        def paren(self, i:int=None):
-            if i is None:
-                return self.getTypedRuleContexts(ExprParser.ParenContext)
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterOp" ):
+                listener.enterOp(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitOp" ):
+                listener.exitOp(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitOp" ):
+                return visitor.visitOp(self)
             else:
-                return self.getTypedRuleContext(ExprParser.ParenContext,i)
-
-
-        def num(self):
-            return self.getTypedRuleContext(ExprParser.NumContext,0)
-
-
-        def newl(self):
-            return self.getTypedRuleContext(ExprParser.NewlContext,0)
-
-
-        def getRuleIndex(self):
-            return ExprParser.RULE_function
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterFunction" ):
-                listener.enterFunction(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitFunction" ):
-                listener.exitFunction(self)
+                return visitor.visitChildren(self)
 
 
 
 
-    def function(self):
+    def op(self):
 
-        localctx = ExprParser.FunctionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 4, self.RULE_function)
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 17
-            self.print_()
-            self.state = 18
-            self.paren()
-            self.state = 19
-            self.num()
-            self.state = 20
-            self.paren()
-            self.state = 21
-            self.newl()
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
-
-
-    class NumContext(ParserRuleContext):
-        __slots__ = 'parser'
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
-            super().__init__(parent, invokingState)
-            self.parser = parser
-
-        def Number(self):
-            return self.getToken(ExprParser.Number, 0)
-
-        def getRuleIndex(self):
-            return ExprParser.RULE_num
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterNum" ):
-                listener.enterNum(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitNum" ):
-                listener.exitNum(self)
-
-
-
-
-    def num(self):
-
-        localctx = ExprParser.NumContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 6, self.RULE_num)
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 23
-            self.match(ExprParser.Number)
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
-
-
-    class NewlContext(ParserRuleContext):
-        __slots__ = 'parser'
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
-            super().__init__(parent, invokingState)
-            self.parser = parser
-
-        def Newline(self):
-            return self.getToken(ExprParser.Newline, 0)
-
-        def getRuleIndex(self):
-            return ExprParser.RULE_newl
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterNewl" ):
-                listener.enterNewl(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitNewl" ):
-                listener.exitNewl(self)
-
-
-
-
-    def newl(self):
-
-        localctx = ExprParser.NewlContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 8, self.RULE_newl)
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 25
-            self.match(ExprParser.Newline)
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
-
-
-    class ParenContext(ParserRuleContext):
-        __slots__ = 'parser'
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
-            super().__init__(parent, invokingState)
-            self.parser = parser
-
-
-        def getRuleIndex(self):
-            return ExprParser.RULE_paren
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterParen" ):
-                listener.enterParen(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitParen" ):
-                listener.exitParen(self)
-
-
-
-
-    def paren(self):
-
-        localctx = ExprParser.ParenContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 10, self.RULE_paren)
+        localctx = ExprParser.OpContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 6, self.RULE_op)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 27
+            self.state = 17
             _la = self._input.LA(1)
-            if not(_la==2 or _la==3):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 30) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

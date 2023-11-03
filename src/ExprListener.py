@@ -17,48 +17,30 @@ class ExprListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by ExprParser#print.
-    def enterPrint(self, ctx:ExprParser.PrintContext):
+    # Enter a parse tree produced by ExprParser#func.
+    def enterFunc(self, ctx:ExprParser.FuncContext):
         pass
 
-    # Exit a parse tree produced by ExprParser#print.
-    def exitPrint(self, ctx:ExprParser.PrintContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#function.
-    def enterFunction(self, ctx:ExprParser.FunctionContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#function.
-    def exitFunction(self, ctx:ExprParser.FunctionContext):
+    # Exit a parse tree produced by ExprParser#func.
+    def exitFunc(self, ctx:ExprParser.FuncContext):
         pass
 
 
-    # Enter a parse tree produced by ExprParser#num.
-    def enterNum(self, ctx:ExprParser.NumContext):
+    # Enter a parse tree produced by ExprParser#atom.
+    def enterAtom(self, ctx:ExprParser.AtomContext):
         pass
 
-    # Exit a parse tree produced by ExprParser#num.
-    def exitNum(self, ctx:ExprParser.NumContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#newl.
-    def enterNewl(self, ctx:ExprParser.NewlContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#newl.
-    def exitNewl(self, ctx:ExprParser.NewlContext):
+    # Exit a parse tree produced by ExprParser#atom.
+    def exitAtom(self, ctx:ExprParser.AtomContext):
         pass
 
 
-    # Enter a parse tree produced by ExprParser#paren.
-    def enterParen(self, ctx:ExprParser.ParenContext):
+    # Enter a parse tree produced by ExprParser#op.
+    def enterOp(self, ctx:ExprParser.OpContext):
         pass
 
-    # Exit a parse tree produced by ExprParser#paren.
-    def exitParen(self, ctx:ExprParser.ParenContext):
+    # Exit a parse tree produced by ExprParser#op.
+    def exitOp(self, ctx:ExprParser.OpContext):
         pass
 
 
