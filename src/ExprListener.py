@@ -17,12 +17,39 @@ class ExprListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by ExprParser#print.
+    def enterPrint(self, ctx:ExprParser.PrintContext):
+        pass
+
+    # Exit a parse tree produced by ExprParser#print.
+    def exitPrint(self, ctx:ExprParser.PrintContext):
+        pass
+
+
     # Enter a parse tree produced by ExprParser#function.
     def enterFunction(self, ctx:ExprParser.FunctionContext):
         pass
 
     # Exit a parse tree produced by ExprParser#function.
     def exitFunction(self, ctx:ExprParser.FunctionContext):
+        pass
+
+
+    # Enter a parse tree produced by ExprParser#num.
+    def enterNum(self, ctx:ExprParser.NumContext):
+        pass
+
+    # Exit a parse tree produced by ExprParser#num.
+    def exitNum(self, ctx:ExprParser.NumContext):
+        pass
+
+
+    # Enter a parse tree produced by ExprParser#newl.
+    def enterNewl(self, ctx:ExprParser.NewlContext):
+        pass
+
+    # Exit a parse tree produced by ExprParser#newl.
+    def exitNewl(self, ctx:ExprParser.NewlContext):
         pass
 
 
