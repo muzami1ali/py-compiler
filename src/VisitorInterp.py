@@ -43,7 +43,13 @@ class VisitorInterp(ExprVisitor):
 
         self.builder.ret(self.visit(ctx.getChild(0)))
 
-        print(self.module)
+        f = open("calc.ll", "w")
+        f.write(str(self.module))
+        f.close()
+
+        f = open("calc.ll", "r")
+        print(f.read())
+
         return 0
         return super().visitProg(ctx)
 
