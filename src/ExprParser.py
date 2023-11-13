@@ -10,14 +10,13 @@ else:
 
 def serializedATN():
     return [
-        4,1,6,28,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,1,0,1,0,1,1,1,1,1,1,
-        1,1,1,1,1,1,1,1,5,1,19,8,1,10,1,12,1,22,9,1,1,2,1,2,1,3,1,3,1,3,
-        0,1,2,4,0,2,4,6,0,1,1,0,1,4,24,0,8,1,0,0,0,2,11,1,0,0,0,4,23,1,0,
-        0,0,6,25,1,0,0,0,8,9,3,2,1,0,9,10,5,0,0,1,10,1,1,0,0,0,11,12,6,1,
-        -1,0,12,13,3,4,2,0,13,20,1,0,0,0,14,15,10,1,0,0,15,16,3,6,3,0,16,
-        17,3,2,1,2,17,19,1,0,0,0,18,14,1,0,0,0,19,22,1,0,0,0,20,18,1,0,0,
-        0,20,21,1,0,0,0,21,3,1,0,0,0,22,20,1,0,0,0,23,24,5,5,0,0,24,5,1,
-        0,0,0,25,26,7,0,0,0,26,7,1,0,0,0,1,20
+        4,1,6,23,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,1,0,1,0,1,1,1,1,1,1,
+        1,1,1,1,3,1,17,8,1,1,2,1,2,1,3,1,3,1,3,0,0,4,0,2,4,6,0,1,1,0,1,4,
+        19,0,8,1,0,0,0,2,16,1,0,0,0,4,18,1,0,0,0,6,20,1,0,0,0,8,9,3,2,1,
+        0,9,10,5,0,0,1,10,1,1,0,0,0,11,17,3,4,2,0,12,13,3,4,2,0,13,14,3,
+        6,3,0,14,15,3,2,1,0,15,17,1,0,0,0,16,11,1,0,0,0,16,12,1,0,0,0,17,
+        3,1,0,0,0,18,19,5,5,0,0,19,5,1,0,0,0,20,21,7,0,0,0,21,7,1,0,0,0,
+        1,16
     ]
 
 class ExprParser ( Parser ):
@@ -100,7 +99,7 @@ class ExprParser ( Parser ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 8
-            self.func(0)
+            self.func()
             self.state = 9
             self.match(ExprParser.EOF)
         except RecognitionException as re:
@@ -123,15 +122,12 @@ class ExprParser ( Parser ):
             return self.getTypedRuleContext(ExprParser.AtomContext,0)
 
 
-        def func(self, i:int=None):
-            if i is None:
-                return self.getTypedRuleContexts(ExprParser.FuncContext)
-            else:
-                return self.getTypedRuleContext(ExprParser.FuncContext,i)
-
-
         def op(self):
             return self.getTypedRuleContext(ExprParser.OpContext,0)
+
+
+        def func(self):
+            return self.getTypedRuleContext(ExprParser.FuncContext,0)
 
 
         def getRuleIndex(self):
@@ -153,46 +149,38 @@ class ExprParser ( Parser ):
 
 
 
-    def func(self, _p:int=0):
-        _parentctx = self._ctx
-        _parentState = self.state
-        localctx = ExprParser.FuncContext(self, self._ctx, _parentState)
-        _prevctx = localctx
-        _startState = 2
-        self.enterRecursionRule(localctx, 2, self.RULE_func, _p)
+
+    def func(self):
+
+        localctx = ExprParser.FuncContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 2, self.RULE_func)
         try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 12
-            self.atom()
-            self._ctx.stop = self._input.LT(-1)
-            self.state = 20
+            self.state = 16
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,0,self._ctx)
-            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
-                if _alt==1:
-                    if self._parseListeners is not None:
-                        self.triggerExitRuleEvent()
-                    _prevctx = localctx
-                    localctx = ExprParser.FuncContext(self, _parentctx, _parentState)
-                    self.pushNewRecursionContext(localctx, _startState, self.RULE_func)
-                    self.state = 14
-                    if not self.precpred(self._ctx, 1):
-                        from antlr4.error.Errors import FailedPredicateException
-                        raise FailedPredicateException(self, "self.precpred(self._ctx, 1)")
-                    self.state = 15
-                    self.op()
-                    self.state = 16
-                    self.func(2) 
-                self.state = 22
-                self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,0,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
+            if la_ == 1:
+                self.enterOuterAlt(localctx, 1)
+                self.state = 11
+                self.atom()
+                pass
+
+            elif la_ == 2:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 12
+                self.atom()
+                self.state = 13
+                self.op()
+                self.state = 14
+                self.func()
+                pass
+
 
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
             self._errHandler.recover(self, re)
         finally:
-            self.unrollRecursionContexts(_parentctx)
+            self.exitRule()
         return localctx
 
 
@@ -232,7 +220,7 @@ class ExprParser ( Parser ):
         self.enterRule(localctx, 4, self.RULE_atom)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 23
+            self.state = 18
             self.match(ExprParser.INT)
         except RecognitionException as re:
             localctx.exception = re
@@ -278,7 +266,7 @@ class ExprParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 25
+            self.state = 20
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 30) != 0)):
                 self._errHandler.recoverInline(self)
@@ -293,22 +281,6 @@ class ExprParser ( Parser ):
             self.exitRule()
         return localctx
 
-
-
-    def sempred(self, localctx:RuleContext, ruleIndex:int, predIndex:int):
-        if self._predicates == None:
-            self._predicates = dict()
-        self._predicates[1] = self.func_sempred
-        pred = self._predicates.get(ruleIndex, None)
-        if pred is None:
-            raise Exception("No predicate with index:" + str(ruleIndex))
-        else:
-            return pred(localctx, predIndex)
-
-    def func_sempred(self, localctx:FuncContext, predIndex:int):
-            if predIndex == 0:
-                return self.precpred(self._ctx, 1)
-         
 
 
 

@@ -13,13 +13,12 @@ llvm_ir = """
 target triple = "unknown-unknown-unknown"
 target datalayout = ""
 
-define i32 @main()
+define i32 @"main"()
 {
 entry:
-  %".2" = add i32 2, 3
-  %".3" = mul i32 %".2", 4
-  %".4" = udiv i32 %".3", 2
-  ret i32 %".4"
+  %".2" = mul i32 3, 4
+  %".3" = add i32 2, %".2"
+  ret i32 %".3"
 }
    """
 

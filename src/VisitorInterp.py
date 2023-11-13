@@ -8,7 +8,7 @@ class VisitorInterp(ExprVisitor):
     def __init__(self):
         self.module = ir.Module(name="calc")
         func_ty = ir.FunctionType(ir.IntType(32), [])
-        func = ir.Function(self.module, func_ty, name="compute_expression")
+        func = ir.Function(self.module, func_ty, name="main")
         block = func.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(block)
         self.symbol_table = {}
