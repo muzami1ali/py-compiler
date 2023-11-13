@@ -9,17 +9,18 @@ llvm.initialize_native_target()
 llvm.initialize_native_asmprinter()
 
 llvm_ir = """
-   ; ModuleID = "calc"
-   target triple = "unknown-unknown-unknown"
-   target datalayout = ""
+; ModuleID = "calc"
+target triple = "unknown-unknown-unknown"
+target datalayout = ""
 
-  define i32 @main()
-  {
-  entry:
-    %".2" = add i32 2, 3
-    ret i32 %".2"
-  }
-
+define i32 @main()
+{
+entry:
+  %".2" = add i32 2, 3
+  %".3" = mul i32 %".2", 4
+  %".4" = udiv i32 %".3", 2
+  ret i32 %".4"
+}
    """
 
 def create_execution_engine():

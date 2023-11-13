@@ -21,6 +21,8 @@ class VisitorInterp(ExprVisitor):
         return ctx.getText()
     
     def visitFunc(self, ctx: ExprParser.FuncContext):
+        if ctx.getChildCount() == 1:
+            return self.visit(ctx.getChild(0))
         if ctx.getChildCount() == 3:
             op = self.visit(ctx.getChild(1))
             lhs = self.visit(ctx.getChild(0))
