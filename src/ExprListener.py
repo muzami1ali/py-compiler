@@ -35,14 +35,5 @@ class ExprListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by ExprParser#op.
-    def enterOp(self, ctx:ExprParser.OpContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#op.
-    def exitOp(self, ctx:ExprParser.OpContext):
-        pass
-
-
 
 del ExprParser

@@ -24,10 +24,5 @@ class ExprVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by ExprParser#op.
-    def visitOp(self, ctx:ExprParser.OpContext):
-        return self.visitChildren(ctx)
-
-
 
 del ExprParser

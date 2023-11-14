@@ -17,14 +17,11 @@ class VisitorInterp(ExprVisitor):
     def visitAtom(self, ctx: ExprParser.AtomContext):
         return ir.Constant(ir.IntType(32), int(ctx.getText()))
 
-    def visitOp(self, ctx: ExprParser.OpContext):
-        return ctx.getText()
-    
     def visitFunc(self, ctx: ExprParser.FuncContext):
         if ctx.getChildCount() == 1:
             return self.visit(ctx.getChild(0))
         if ctx.getChildCount() == 3:
-            op = self.visit(ctx.getChild(1))
+            op = ctx.getChild(1).getText()
             lhs = self.visit(ctx.getChild(0))
             rhs = self.visit(ctx.getChild(2))
 

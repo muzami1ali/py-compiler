@@ -1,7 +1,16 @@
 grammar Expr;
-prog : func EOF;
-func: atom | atom op func;
-atom : INT ;
+
+// lexer rules 
 INT : [0-9]+ ;
 WS : [ \t\n\r]+ -> skip ;
-op: '+' | '-' | '/' | '*' ;
+
+// parser rules
+prog : func EOF;
+func :
+     | atom
+    //  | func '/' func
+     | func '*' func
+     | func '+' func
+    //  | func '-' func 
+     ;
+atom : INT ;
