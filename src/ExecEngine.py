@@ -9,19 +9,14 @@ llvm.initialize_native_target()
 llvm.initialize_native_asmprinter()
 
 llvm_ir = """
-; ModuleID = "calc"
-target triple = "unknown-unknown-unknown"
-target datalayout = ""
-
-define i32 @"main"()
-{
-entry:
-  %".2" = mul i32 4, 6
-  %".3" = mul i32 %".2", 8
-  %".4" = add i32 2, %".3"
-  ret i32 %".4"
+; Declare the string constant as a global constant.
+@.str = private unnamed_addr constant [13 x i8] c"hello world\0A\00" ; External declaration of the puts function
+declare i32 @puts(ptr nocapture) nounwind
+; Definition of main function
+define i32 @main() {
+; Call puts function to write out the string to stdout. call i32 @puts(ptr @.str)
+ret i32 0
 }
-
    """
 
 def create_execution_engine():
@@ -56,9 +51,9 @@ engine = create_execution_engine()
 mod = compile_ir(engine, llvm_ir)
 
 # Look up the function pointer (a Python int)
-func_ptr = engine.get_function_address("main")
+# func_ptr = engine.get_function_address("main")
 
 # Run the function via ctypes
-cfunc = CFUNCTYPE(c_int32)(func_ptr)
-res = cfunc()
-print("calc(...) =", res)
+# cfunc = CFUNCTYPE(c_int32)(func_ptr)
+# res = cfunc()
+# print("calc(...) =", res)

@@ -402,6 +402,9 @@ $RECYCLE.BIN/
 #ANTLR
 .antlr
 
+#LLVM
+*.bc
+
 # Windows shortcuts
 *.lnk
 
