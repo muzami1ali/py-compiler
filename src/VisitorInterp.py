@@ -4,6 +4,7 @@ from ExprParser import ExprParser
 from ExprVisitor import ExprVisitor
 from llvmlite import ir
 import llvmlite.binding as llvm
+from util import printf
 
 class VisitorInterp(ExprVisitor):
     def __init__(self):
@@ -20,16 +21,11 @@ class VisitorInterp(ExprVisitor):
         self.func = None
         self.module.triple = target
 
-
-        func2 = ir.Function(self.module,ir.FunctionType(ir.IntType(32), [ir.PointerType(ir.IntType(8))]),name="put")
-        func2.args[0].add_attribute("nocapture")
-        func2.attributes.add("nounwind")
-
         func3 = ir.Function(self.module,ir.FunctionType(ir.IntType(32), []),name="main")
         block3 = func3.append_basic_block(name="entry")
         builder3 = ir.IRBuilder(block3)
         res = builder3.call(func,[],"result")
-        builder3.call(func2,[builder3.bitcast(res,ir.PointerType(ir.IntType(8)))])
+        printf(builder3,"%d",res)
         builder3.ret(ir.Constant(ir.IntType(32),0))
 
     def visitAtom(self, ctx: ExprParser.AtomContext):

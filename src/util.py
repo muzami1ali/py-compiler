@@ -1,4 +1,4 @@
-
+# Ref:Numba
 from llvmlite import ir
 import llvmlite.binding as llvm
 
@@ -8,23 +8,23 @@ int32_t = ir.IntType(32)
 
 voidptr_t = int8_t.as_pointer()
 
-def main():
-    llvm.initialize()
-    llvm.initialize_native_target()
-    llvm.initialize_native_asmprinter()
-    target = llvm.Target.from_default_triple()
-    module = ir.Module(name="print")
-    module.triple = target
-    func_type = ir.FunctionType(int32,[])
-    func = ir.Function(module,func_type,name="main")
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    printf(builder,"%d", ir.Constant(ir.IntType(32),int(25)))
-    builder.ret(ir.Constant(ir.IntType(32),int(0)))
-    f = open("print.ll", "w")
-    f.write(str(module))
-    f.close()
-    print(module)
+# def main():
+#     llvm.initialize()
+#     llvm.initialize_native_target()
+#     llvm.initialize_native_asmprinter()
+#     target = llvm.Target.from_default_triple()
+#     module = ir.Module(name="print")
+#     module.triple = target
+#     func_type = ir.FunctionType(int32,[])
+#     func = ir.Function(module,func_type,name="main")
+#     block = func.append_basic_block(name="entry")
+#     builder = ir.IRBuilder(block)
+#     printf(builder,"%d", ir.Constant(ir.IntType(32),int(25)))
+#     builder.ret(ir.Constant(ir.IntType(32),int(0)))
+#     f = open("print.ll", "w")
+#     f.write(str(module))
+#     f.close()
+#     print(module)
 
 def make_bytearray(buf):
     """
@@ -76,5 +76,5 @@ def printf(builder, format, *args):
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt] + list(args))
 
-if __name__=="__main__": 
-    main() 
+# if __name__=="__main__": 
+#     main() 
