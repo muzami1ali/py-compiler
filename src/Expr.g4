@@ -10,7 +10,7 @@ func :
      | atom
     //  | func '/' func
      | func '*' func
+     | func '-' func 
      | func '+' func
-    //  | func '-' func 
      ;
 atom : INT ;

@@ -7,7 +7,7 @@ target triple = "arm64-apple-macosx14.0.0"
 
 ; Function Attrs: nofree nounwind ssp uwtable(sync)
 define i32 @main() local_unnamed_addr #0 {
-  %1 = tail call i32 (ptr, ...) @printf(ptr noundef nonnull dereferenceable(1) @.str, i32 noundef 25)
+  %1 = tail call i32 (ptr, ...) @printf(ptr noundef nonnull dereferenceable(1) @.str, i32 noundef -3)
   ret i32 0
 }
 
