@@ -1,12 +1,12 @@
 import sys
 from antlr4 import *
-from ExprParser import ExprParser
-from ExprVisitor import ExprVisitor
+from LangParser import LangParser
+from LangVisitor import LangVisitor
 from llvmlite import ir
 import llvmlite.binding as llvm
 from util import printf
 
-class VisitorInterp(ExprVisitor):
+class VisitorInterp(LangVisitor):
     def __init__(self):
         llvm.initialize()
         llvm.initialize_native_target()
@@ -19,7 +19,7 @@ class VisitorInterp(ExprVisitor):
         self.builder = ir.IRBuilder(block)
         self.module.triple = target
 
-        func3 = ir.Function(self.module,ir.FunctionType(ir.IntType(32), []),name="main")
+        func3 = ir.Function(self.module, func_ty, name="main")
         block3 = func3.append_basic_block(name="entry")
         builder3 = ir.IRBuilder(block3)
         res = builder3.call(func,[],"result")
@@ -28,10 +28,10 @@ class VisitorInterp(ExprVisitor):
         #
         builder3.ret(ir.Constant(ir.IntType(32),0))
 
-    def visitAtom(self, ctx: ExprParser.AtomContext):
+    def visitAtom(self, ctx: LangParser.AtomContext):
         return ir.Constant(ir.IntType(32), int(ctx.getText()))
 
-    def visitFunc(self, ctx: ExprParser.FuncContext):
+    def visitFunc(self, ctx: LangParser.FuncContext):
         if ctx.getChildCount() == 1:
             return self.visit(ctx.getChild(0))
         if ctx.getChildCount() == 3:
@@ -49,7 +49,7 @@ class VisitorInterp(ExprVisitor):
                 case "*":
                     return self.builder.mul(lhs,rhs)
     
-    def visitProg(self, ctx: ExprParser.ProgContext):
+    def visitProg(self, ctx: LangParser.ProgContext):
 
         self.builder.ret(self.visit(ctx.getChild(0)))
 

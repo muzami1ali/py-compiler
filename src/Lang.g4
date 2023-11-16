@@ -1,4 +1,4 @@
-grammar Expr;
+grammar Lang;
 
 // lexer rules 
 INT : [0-9]+ ;

@@ -1,14 +1,14 @@
 import sys
 from antlr4 import *
-from ExprLexer import ExprLexer
-from ExprParser import ExprParser
+from LangLexer import LangLexer
+from LangParser import LangParser
 from VisitorInterp import VisitorInterp
 
 def main(argv):
     input_stream = FileStream(argv[1])
-    lexer = ExprLexer(input_stream)
+    lexer = LangLexer(input_stream)
     stream = CommonTokenStream(lexer)
-    parser = ExprParser(stream)
+    parser = LangParser(stream)
     tree = parser.prog()
     if parser.getNumberOfSyntaxErrors() > 0:
         print("syntax errors")

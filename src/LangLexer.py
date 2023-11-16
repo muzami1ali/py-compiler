@@ -1,4 +1,4 @@
-# Generated from Expr.g4 by ANTLR 4.13.0
+# Generated from Lang.g4 by ANTLR 4.13.0
 from antlr4 import *
 from io import StringIO
 import sys
@@ -22,7 +22,7 @@ def serializedATN():
         0,27,28,6,4,0,0,28,10,1,0,0,0,3,0,20,25,1,6,0,0
     ]
 
-class ExprLexer(Lexer):
+class LangLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -46,7 +46,7 @@ class ExprLexer(Lexer):
 
     ruleNames = [ "T__0", "T__1", "T__2", "INT", "WS" ]
 
-    grammarFileName = "Expr.g4"
+    grammarFileName = "Lang.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

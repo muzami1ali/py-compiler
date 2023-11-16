@@ -1,4 +1,4 @@
-# Generated from Expr.g4 by ANTLR 4.13.0
+# Generated from Lang.g4 by ANTLR 4.13.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -22,9 +22,9 @@ def serializedATN():
         24
     ]
 
-class ExprParser ( Parser ):
+class LangParser ( Parser ):
 
-    grammarFileName = "Expr.g4"
+    grammarFileName = "Lang.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -67,14 +67,14 @@ class ExprParser ( Parser ):
             self.parser = parser
 
         def func(self):
-            return self.getTypedRuleContext(ExprParser.FuncContext,0)
+            return self.getTypedRuleContext(LangParser.FuncContext,0)
 
 
         def EOF(self):
-            return self.getToken(ExprParser.EOF, 0)
+            return self.getToken(LangParser.EOF, 0)
 
         def getRuleIndex(self):
-            return ExprParser.RULE_prog
+            return LangParser.RULE_prog
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterProg" ):
@@ -95,14 +95,14 @@ class ExprParser ( Parser ):
 
     def prog(self):
 
-        localctx = ExprParser.ProgContext(self, self._ctx, self.state)
+        localctx = LangParser.ProgContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_prog)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 6
             self.func(0)
             self.state = 7
-            self.match(ExprParser.EOF)
+            self.match(LangParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -120,18 +120,18 @@ class ExprParser ( Parser ):
             self.parser = parser
 
         def atom(self):
-            return self.getTypedRuleContext(ExprParser.AtomContext,0)
+            return self.getTypedRuleContext(LangParser.AtomContext,0)
 
 
         def func(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(ExprParser.FuncContext)
+                return self.getTypedRuleContexts(LangParser.FuncContext)
             else:
-                return self.getTypedRuleContext(ExprParser.FuncContext,i)
+                return self.getTypedRuleContext(LangParser.FuncContext,i)
 
 
         def getRuleIndex(self):
-            return ExprParser.RULE_func
+            return LangParser.RULE_func
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterFunc" ):
@@ -152,7 +152,7 @@ class ExprParser ( Parser ):
     def func(self, _p:int=0):
         _parentctx = self._ctx
         _parentState = self.state
-        localctx = ExprParser.FuncContext(self, self._ctx, _parentState)
+        localctx = LangParser.FuncContext(self, self._ctx, _parentState)
         _prevctx = localctx
         _startState = 2
         self.enterRecursionRule(localctx, 2, self.RULE_func, _p)
@@ -183,40 +183,40 @@ class ExprParser ( Parser ):
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
                     if la_ == 1:
-                        localctx = ExprParser.FuncContext(self, _parentctx, _parentState)
+                        localctx = LangParser.FuncContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_func)
                         self.state = 13
                         if not self.precpred(self._ctx, 3):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
                         self.state = 14
-                        self.match(ExprParser.T__0)
+                        self.match(LangParser.T__0)
                         self.state = 15
                         self.func(4)
                         pass
 
                     elif la_ == 2:
-                        localctx = ExprParser.FuncContext(self, _parentctx, _parentState)
+                        localctx = LangParser.FuncContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_func)
                         self.state = 16
                         if not self.precpred(self._ctx, 2):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
                         self.state = 17
-                        self.match(ExprParser.T__1)
+                        self.match(LangParser.T__1)
                         self.state = 18
                         self.func(3)
                         pass
 
                     elif la_ == 3:
-                        localctx = ExprParser.FuncContext(self, _parentctx, _parentState)
+                        localctx = LangParser.FuncContext(self, _parentctx, _parentState)
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_func)
                         self.state = 19
                         if not self.precpred(self._ctx, 1):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 1)")
                         self.state = 20
-                        self.match(ExprParser.T__2)
+                        self.match(LangParser.T__2)
                         self.state = 21
                         self.func(2)
                         pass
@@ -243,10 +243,10 @@ class ExprParser ( Parser ):
             self.parser = parser
 
         def INT(self):
-            return self.getToken(ExprParser.INT, 0)
+            return self.getToken(LangParser.INT, 0)
 
         def getRuleIndex(self):
-            return ExprParser.RULE_atom
+            return LangParser.RULE_atom
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterAtom" ):
@@ -267,12 +267,12 @@ class ExprParser ( Parser ):
 
     def atom(self):
 
-        localctx = ExprParser.AtomContext(self, self._ctx, self.state)
+        localctx = LangParser.AtomContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_atom)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 27
-            self.match(ExprParser.INT)
+            self.match(LangParser.INT)
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
