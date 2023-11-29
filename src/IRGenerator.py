@@ -5,14 +5,18 @@ from LangVisitor import LangVisitor
 from llvmlite import ir
 import llvmlite.binding as llvm
 from util import printf
+import re
 
-class VisitorInterp(LangVisitor):
-    def __init__(self):
+class IRGenerator(LangVisitor):
+    def __init__(self, fileName, filePath):
+        self.dir = filePath
+        first = re.search("[a-zA-Z0-9]+[.]py", fileName).group()
+        self.moduleName = (re.search("[a-zA-Z0-9]+",first)).group()
         llvm.initialize()
         llvm.initialize_native_target()
         llvm.initialize_native_asmprinter()
         target = llvm.Target.from_default_triple()
-        self.module = ir.Module(name="calc")
+        self.module = ir.Module(name=self.moduleName)
         func_ty = ir.FunctionType(ir.IntType(32), [])
         func = ir.Function(self.module, func_ty, name="op")
         block = func.append_basic_block(name="entry")
@@ -53,12 +57,13 @@ class VisitorInterp(LangVisitor):
 
         self.builder.ret(self.visit(ctx.getChild(0)))
 
-        f = open("calc.ll", "w")
+        # f = open(f"src/lang_tests/{self.moduleName}.ll", "w")
+        f = open(f"{self.dir}.ll", "w")
         f.write(str(self.module))
         f.close()
 
-        f = open("calc.ll", "r")
-        print(f.read())
+        # f = open(f"{self.moduleName}.ll", "r")
+        # print(f.read())
 
         return 0
 

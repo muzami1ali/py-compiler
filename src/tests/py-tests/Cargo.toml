@@ -1,0 +1,15 @@
+[package]
+name = "py-tests"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lang_tester = "0.7.5"
+tempfile = "3.8.1"
+
+[[test]]
+name = "lang_tests"
+path = "src/run.rs"
+harness = false
