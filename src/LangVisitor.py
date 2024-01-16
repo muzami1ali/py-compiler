@@ -14,13 +14,48 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#func.
-    def visitFunc(self, ctx:LangParser.FuncContext):
+    # Visit a parse tree produced by LangParser#file.
+    def visitFile(self, ctx:LangParser.FileContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#atom.
-    def visitAtom(self, ctx:LangParser.AtomContext):
+    # Visit a parse tree produced by LangParser#statement.
+    def visitStatement(self, ctx:LangParser.StatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#assignment_stmt.
+    def visitAssignment_stmt(self, ctx:LangParser.Assignment_stmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#print_stmt.
+    def visitPrint_stmt(self, ctx:LangParser.Print_stmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#arithmetic_stmt.
+    def visitArithmetic_stmt(self, ctx:LangParser.Arithmetic_stmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#boolean_stmt.
+    def visitBoolean_stmt(self, ctx:LangParser.Boolean_stmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#num.
+    def visitNum(self, ctx:LangParser.NumContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#id.
+    def visitId(self, ctx:LangParser.IdContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#bool.
+    def visitBool(self, ctx:LangParser.BoolContext):
         return self.visitChildren(ctx)
 
 
