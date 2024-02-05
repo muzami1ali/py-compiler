@@ -3,40 +3,75 @@ grammar Lang;
 
 // lexer rules 
 COMMENT: '#' .*? [\n\r] -> skip;
-ID: [a-zA-Z_] [a-zA-Z0-9_]*;
-NUM  : [0-9]+ 
-     | [0-9]+ '.' [0-9]*
-     | '.' [0-9]+
-     ; 
 BOOL: 'True' | 'False';
+ID: [a-zA-Z_] [a-zA-Z0-9_]*;
+HID: '__' ID '__';
+INT: [0-9]+ ;
+FLOAT: [0-9]+ '.' [0-9]+ ;
+KWD: 'def' | 'if' ;
+SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':' 
+   | '_' | '.' | '%' | '|' 
+    ;
+PAREN: '(' | ')';
 WS : [ \t\n\r]+ -> skip ;
+
+// ###########################################################
 
 // parser rules
 prog : file EOF;
-file : statement*;
+file :  exp*;
+
+exp : var_decl | a_op | b_op | func_call;
+
+var : ID;
+int : INT;
+float : FLOAT;
+bool : BOOL;
+
+a_op: aop3 '+' a_op
+    | aop3 '-' a_op
+    | aop3
+    ;
+aop3: aop2 '/' aop3
+    | aop2 '*' aop3
+    | aop2 '%' aop3
+    | aop2 '//' aop3
+    | aop2
+    ;
+aop2: aop1 '**' aop2
+    | aop1 
+    ;
+aop1: int 
+    | var
+    | float
+    ;
+
+b_op : a_op '>' a_op
+    | a_op '<' a_op
+    | a_op '<=' a_op
+    | a_op '>=' a_op
+    | a_op '==' a_op
+    | a_op '!=' a_op
+    ;
+
+params: '(' (var (',' var)* )* ')';
+
+func_call: var params ;
+
+int_var : var '=' int;
+float_var: var '=' float;
+bool_var : var '=' bool;
+
+var_decl : int_var | float_var | bool_var;
+
+function: 'def' var params ':' exp+ ;
+
+main_func: 'if __name__ == "__main__" :' exp+;
 
 
 
-//statements
-statement: assignment_stmt | arithmetic_stmt | boolean_stmt | print_stmt;
-assignment_stmt: id '=' (arithmetic_stmt | boolean_stmt);
-print_stmt: 'print''('(arithmetic_stmt | boolean_stmt)')';
-arithmetic_stmt: num
-               | arithmetic_stmt '/' arithmetic_stmt
-               | arithmetic_stmt '*' arithmetic_stmt
-               | arithmetic_stmt '-' arithmetic_stmt 
-               | arithmetic_stmt '+' arithmetic_stmt
-               ;
-boolean_stmt   : bool
-               | arithmetic_stmt '>'  arithmetic_stmt
-               | arithmetic_stmt '>=' arithmetic_stmt
-               | arithmetic_stmt '<'  arithmetic_stmt
-               | arithmetic_stmt '<=' arithmetic_stmt
-               | arithmetic_stmt '==' arithmetic_stmt
-               | arithmetic_stmt '!=' arithmetic_stmt
-               ;
 
-//Atoms
-num : NUM;
-id: ID;
-bool: BOOL;
+
+
+
+

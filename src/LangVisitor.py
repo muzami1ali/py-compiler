@@ -19,43 +19,93 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#statement.
-    def visitStatement(self, ctx:LangParser.StatementContext):
+    # Visit a parse tree produced by LangParser#exp.
+    def visitExp(self, ctx:LangParser.ExpContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#assignment_stmt.
-    def visitAssignment_stmt(self, ctx:LangParser.Assignment_stmtContext):
+    # Visit a parse tree produced by LangParser#var.
+    def visitVar(self, ctx:LangParser.VarContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#print_stmt.
-    def visitPrint_stmt(self, ctx:LangParser.Print_stmtContext):
+    # Visit a parse tree produced by LangParser#int.
+    def visitInt(self, ctx:LangParser.IntContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#arithmetic_stmt.
-    def visitArithmetic_stmt(self, ctx:LangParser.Arithmetic_stmtContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#boolean_stmt.
-    def visitBoolean_stmt(self, ctx:LangParser.Boolean_stmtContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#num.
-    def visitNum(self, ctx:LangParser.NumContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#id.
-    def visitId(self, ctx:LangParser.IdContext):
+    # Visit a parse tree produced by LangParser#float.
+    def visitFloat(self, ctx:LangParser.FloatContext):
         return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by LangParser#bool.
     def visitBool(self, ctx:LangParser.BoolContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#a_op.
+    def visitA_op(self, ctx:LangParser.A_opContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#aop3.
+    def visitAop3(self, ctx:LangParser.Aop3Context):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#aop2.
+    def visitAop2(self, ctx:LangParser.Aop2Context):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#aop1.
+    def visitAop1(self, ctx:LangParser.Aop1Context):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#b_op.
+    def visitB_op(self, ctx:LangParser.B_opContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#params.
+    def visitParams(self, ctx:LangParser.ParamsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#func_call.
+    def visitFunc_call(self, ctx:LangParser.Func_callContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#int_var.
+    def visitInt_var(self, ctx:LangParser.Int_varContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#float_var.
+    def visitFloat_var(self, ctx:LangParser.Float_varContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#bool_var.
+    def visitBool_var(self, ctx:LangParser.Bool_varContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#var_decl.
+    def visitVar_decl(self, ctx:LangParser.Var_declContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#function.
+    def visitFunction(self, ctx:LangParser.FunctionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#main_func.
+    def visitMain_func(self, ctx:LangParser.Main_funcContext):
         return self.visitChildren(ctx)
 
 

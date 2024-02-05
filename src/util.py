@@ -29,7 +29,7 @@ def global_constant(builder_or_module, name, value, linkage='internal'):
     data.initializer = value
     return data
 
-def printf(builder, format, *args):
+def printf(builder, format, num, *args):
     """
     Calls printf().
     Argument `format` is expected to be a Python string.
@@ -43,7 +43,7 @@ def printf(builder, format, *args):
     # Make global constant for format string
     cstring = voidptr_t
     fmt_bytes = make_bytearray((format + '\00').encode('ascii'))
-    global_fmt = global_constant(mod, "printf_format", fmt_bytes)
+    global_fmt = global_constant(mod, f"printf_format_{num}", fmt_bytes)
     fnty = ir.FunctionType(int32_t, [cstring], var_arg=True)
     # Insert printf()
     try:
