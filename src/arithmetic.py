@@ -14,6 +14,7 @@ def pow(builder, lhs, rhs):
 
     return builder.call(func, [lhs,rhs])
 
+
 def floor(builder, val):
     double = ir.DoubleType()
     mod = builder.module
@@ -25,6 +26,7 @@ def floor(builder, val):
         func = ir.Function(mod, func_ty, name="floor")
 
     return builder.call(func,[val])
+
 
 def int_op(op,lhs,rhs,builder):
      match op:
@@ -47,6 +49,7 @@ def int_op(op,lhs,rhs,builder):
             rhs = builder.sitofp(rhs, ir.DoubleType())
             return (pow(builder,lhs,rhs), "DoubleVal")
 
+
 def float_op(op,lhs,rhs,builder):
      match op:
         case "+":
@@ -68,6 +71,7 @@ def float_op(op,lhs,rhs,builder):
             rhs = builder.fpext(rhs, ir.DoubleType())
             return (pow(builder,lhs,rhs), "DoubleVal")
 
+
 def double_op(op,lhs,rhs,builder):
      match op:
         case "+":
@@ -85,8 +89,6 @@ def double_op(op,lhs,rhs,builder):
             return (floor(builder,res), "DoubleVal" )
         case "**":
             return (pow(builder,lhs,rhs), "DoubleVal")
-
-
 
 
 def aop(op,lhs,rhs,builder,symT,addrT):

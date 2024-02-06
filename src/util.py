@@ -1,9 +1,9 @@
 # Ref:Numba
 from llvmlite import ir
 
+
 int8_t = ir.IntType(8)
 int32_t = ir.IntType(32)
-
 voidptr_t = int8_t.as_pointer()
 
 
@@ -14,6 +14,7 @@ def make_bytearray(buf):
     b = bytearray(buf)
     n = len(b)
     return ir.Constant(ir.ArrayType(ir.IntType(8), n), b)
+
 
 def global_constant(builder_or_module, name, value, linkage='internal'):
     """
@@ -28,6 +29,7 @@ def global_constant(builder_or_module, name, value, linkage='internal'):
     data.global_constant = True
     data.initializer = value
     return data
+
 
 def printf(builder, format, num, *args):
     """
@@ -53,6 +55,7 @@ def printf(builder, format, num, *args):
     # Call
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt] + list(args))
+
 
 def print_func(builder, num, func_param):
     i = func_param[0]

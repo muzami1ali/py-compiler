@@ -7,6 +7,8 @@ import llvmlite.binding as llvm
 from util import printf, print_func
 from arithmetic import *
 import re
+
+
 def checkType(ty): 
     match ty:
         case "IntVar":
@@ -119,15 +121,7 @@ class IRGenerator(LangVisitor):
             lhs = self.visit(ctx.getChild(0))
             rhs = self.visit(ctx.getChild(2))
             return aop(op,lhs,rhs,self.builder, self.symbol_table,self.address_table)
-            # match op:
-            #     case "/":
-            #         return self.builder.udiv(lhs,rhs)
-            #     case "*":
-            #         return self.builder.mul(lhs,rhs)
-            #     case "%":
-            #         return self.builder.urem(lhs,rhs)
-                # case "//":
-                #     return self.builder.mul(lhs,rhs)
+
 
     # Visit a parse tree produced by LangParser#aop2.
     def visitAop2(self, ctx:LangParser.Aop2Context):
