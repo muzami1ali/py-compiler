@@ -12,7 +12,11 @@ fn main() {
     LangTester::new()
         .test_dir("src/lang_tests")
         // Only use files named `*.py` as test files.
-        .test_file_filter(|p| p.extension().unwrap().to_str().unwrap() == "py")
+        .test_file_filter(|p| {
+            p.file_name().unwrap().to_str().unwrap() != ".DS_Store" &&
+            p.extension().unwrap().to_str().unwrap() == "py" 
+        })
+        // .test_file_filter(|p| p.extension().unwrap().to_str().unwrap() == "py")
         // Extract the first sequence of commented line(s) as the tests.
         .test_extract(|p| {
             read_to_string(p)
