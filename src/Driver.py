@@ -14,10 +14,10 @@ def main(argv):
     if parser.getNumberOfSyntaxErrors() > 0:
         print("syntax errors")
     else:
-        if len(argv) != 2:
+        if len(argv) != 2: # Calling Compile.py
             irGen = IRGenerator(argv[1], argv[2])
             irGen.visit(tree)
-        else:
+        else: # Directly calling driver.py
             moduleName = (re.search("[a-zA-Z0-9]+",argv[1])).group()
             irGen = IRGenerator(argv[1], moduleName)
             irGen.visit(tree)

@@ -1,9 +1,9 @@
 # Ref:Numba
 from llvmlite import ir
 
+
 int8_t = ir.IntType(8)
 int32_t = ir.IntType(32)
-
 voidptr_t = int8_t.as_pointer()
 
 
@@ -14,6 +14,7 @@ def make_bytearray(buf):
     b = bytearray(buf)
     n = len(b)
     return ir.Constant(ir.ArrayType(ir.IntType(8), n), b)
+
 
 def global_constant(builder_or_module, name, value, linkage='internal'):
     """
@@ -29,7 +30,8 @@ def global_constant(builder_or_module, name, value, linkage='internal'):
     data.initializer = value
     return data
 
-def printf(builder, format, *args):
+
+def printf(builder, format, num, *args):
     """
     Calls printf().
     Argument `format` is expected to be a Python string.
@@ -43,7 +45,7 @@ def printf(builder, format, *args):
     # Make global constant for format string
     cstring = voidptr_t
     fmt_bytes = make_bytearray((format + '\00').encode('ascii'))
-    global_fmt = global_constant(mod, "printf_format", fmt_bytes)
+    global_fmt = global_constant(mod, f"printf_format_{num}", fmt_bytes)
     fnty = ir.FunctionType(int32_t, [cstring], var_arg=True)
     # Insert printf()
     try:
@@ -53,3 +55,26 @@ def printf(builder, format, *args):
     # Call
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt] + list(args))
+
+
+def print_func(builder, num, func_param):
+    i = func_param[0]
+    typ = i[1]
+    if typ=="IntVar":
+        res = builder.load(i[0])
+        printf(builder, "%d\n", num, res)
+    elif typ=="FloatVar":
+        res = builder.load(i[0])
+        res1 = builder.fpext(res, ir.DoubleType())
+        printf(builder, "%f\n", num, res1)
+    if typ=="DoubleVar":
+        res = builder.load(i[0])
+        printf(builder, "%f\n", num, res)
+    elif typ=="IntVal":
+        printf(builder, "%d\n", num, i[0])
+    elif typ=="FloatVal":
+        res = builder.fpext(i[0], ir.DoubleType())
+        printf(builder, "%f\n", num, res)
+    elif typ=="DoubleVal":
+        printf(builder, "%f\n", num, i[0])
+
