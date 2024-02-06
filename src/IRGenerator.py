@@ -5,6 +5,7 @@ from LangVisitor import LangVisitor
 from llvmlite import ir
 import llvmlite.binding as llvm
 from util import printf
+from arithmetic import *
 import re
 def checkType(ty): 
     match ty:
@@ -73,17 +74,17 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#var.
     def visitVar(self, ctx:LangParser.VarContext):
-        return ctx.getText()
+        return (ctx.getText(), "Var")
 
 
     # Visit a parse tree produced by LangParser#int.
     def visitInt(self, ctx:LangParser.IntContext):
-        return ir.Constant(ir.IntType(32), int(ctx.getText()))
+        return (ir.Constant(ir.IntType(32), int(ctx.getText())), "IntVal")
 
 
     # Visit a parse tree produced by LangParser#float.
     def visitFloat(self, ctx:LangParser.FloatContext):
-        return ir.Constant(ir.FloatType(), float(ctx.getText()))
+        return (ir.Constant(ir.FloatType(), float(ctx.getText())), "FloatVal")
 
 
     # Visit a parse tree produced by LangParser#bool.
@@ -104,11 +105,7 @@ class IRGenerator(LangVisitor):
             op = ctx.getChild(1).getText()
             lhs = self.visit(ctx.getChild(0))
             rhs = self.visit(ctx.getChild(2))
-            match op:
-                case "+":
-                    return self.builder.add(lhs,rhs)
-                case "-":
-                    return self.builder.sub(lhs,rhs)
+            return aop(op,lhs,rhs,self.builder, self.symbol_table,self.address_table)
 
 
     # Visit a parse tree produced by LangParser#aop3.
@@ -138,17 +135,21 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#aop1.
     def visitAop1(self, ctx:LangParser.Aop1Context):
-        if(ctx.getChild(0).getRuleIndex()==3):
-            pass
-        else:
-            return self.visit(ctx.getChild(0))
-        print("#################################")
+        return self.visit(ctx.getChild(0))
 
 
     # Visit a parse tree produced by LangParser#b_op.
     def visitB_op(self, ctx:LangParser.B_opContext):
         return self.visitChildren(ctx)
 
+    def visitParam(self, ctx:LangParser.ParamContext):
+        if(ctx.getChild(0).getRuleIndex()==3):
+            param = (self.visit(ctx.getChild(0)))[0]
+            param_type = self.symbol_table[param]
+            return (self.address_table[param],param_type)
+
+        else:
+            return self.visit(ctx.getChild(0))
 
     # Visit a parse tree produced by LangParser#params.
     def visitParams(self, ctx:LangParser.ParamsContext):
@@ -158,50 +159,54 @@ class IRGenerator(LangVisitor):
         else:
             lst = []
             for i in range(1,size,2):
-                if(ctx.getChild(i).getRuleIndex()==3):
-                    param = (self.visit(ctx.getChild(i)))
-                    param_type = self.symbol_table[param]
-                    lst.append((self.address_table[param],param_type))
-                else:
-                    lst.append((self.visit(ctx.getChild(i)), "None"))
+                lst.append(self.visit(ctx.getChild(i)))
                 return lst
 
 
     # Visit a parse tree produced by LangParser#func_call.
     def visitFunc_call(self, ctx:LangParser.Func_callContext):
-        func_name  = self.visit(ctx.getChild(0))
+        func_name  = self.visit(ctx.getChild(0))[0]
         func_param = self.visit(ctx.getChild(1))
+        print(func_param[0])
         if (func_name == "print"):
             i = func_param[0]
-            res = self.builder.load(i[0])
             typ = i[1]
             if typ=="Int":
+                res = self.builder.load(i[0])
                 printf(self.builder, "%d\n", self.num, res)
                 self.num += 1
             elif typ=="Float":
+                res = self.builder.load(i[0])
                 res1 = self.builder.fpext(res, ir.DoubleType())
                 printf(self.builder, "%f\n", self.num, res1)
+                self.num += 1
+            elif typ=="IntVal":
+                printf(self.builder, "%d\n", self.num, i[0])
+                self.num += 1
+            elif typ=="FloatVal":
+                res = self.builder.fpext(i[0], ir.DoubleType())
+                printf(self.builder, "%f\n", self.num, res)
                 self.num += 1
         return 0
 
 
     # Visit a parse tree produced by LangParser#int_var.
     def visitInt_var(self, ctx:LangParser.Int_varContext):
-        var_name = self.visit(ctx.getChild(0))
-        val  = self.visit(ctx.getChild(2))
+        var_name = self.visit(ctx.getChild(0))[0]
+        val  = self.visit(ctx.getChild(2))[0]
         return (var_name, val, "Int")
 
 
     # Visit a parse tree produced by LangParser#float_var.
     def visitFloat_var(self, ctx:LangParser.Float_varContext):
-        var_name = self.visit(ctx.getChild(0))
-        val  = self.visit(ctx.getChild(2))
+        var_name = self.visit(ctx.getChild(0))[0]
+        val  = self.visit(ctx.getChild(2))[0]
         return (var_name, val, "Float")
 
 
     # Visit a parse tree produced by LangParser#bool_var.
     def visitBool_var(self, ctx:LangParser.Bool_varContext):
-        var_name = self.visit(ctx.getChild(0))
+        var_name = self.visit(ctx.getChild(0))[0]
         val  = self.visit(ctx.getChild(2))
         return (var_name, val, "Bool")
 
@@ -210,7 +215,6 @@ class IRGenerator(LangVisitor):
     def visitVar_decl(self, ctx:LangParser.Var_declContext):
         var_info = self.visit(ctx.getChild(0))
         var_name = var_info[0]
-        print(var_name)
         var_val = var_info[1]
         var_type = var_info[2]
         var_addr = self.builder.alloca(checkType(var_type), name=var_name)

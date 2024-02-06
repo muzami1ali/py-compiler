@@ -69,6 +69,11 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#param.
+    def visitParam(self, ctx:LangParser.ParamContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#params.
     def visitParams(self, ctx:LangParser.ParamsContext):
         return self.visitChildren(ctx)

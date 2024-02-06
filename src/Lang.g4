@@ -28,8 +28,8 @@ int : INT;
 float : FLOAT;
 bool : BOOL;
 
-a_op: aop3 '+' a_op
-    | aop3 '-' a_op
+a_op: a_op '-' aop3
+    | a_op '+' aop3
     | aop3
     ;
 aop3: aop2 '/' aop3
@@ -54,7 +54,9 @@ b_op : a_op '>' a_op
     | a_op '!=' a_op
     ;
 
-params: '(' (var (',' var)* )* ')';
+param: var | a_op ;
+
+params: '(' (param (',' param)* )* ')';
 
 func_call: var params ;
 

@@ -116,6 +116,15 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#param.
+    def enterParam(self, ctx:LangParser.ParamContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#param.
+    def exitParam(self, ctx:LangParser.ParamContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#params.
     def enterParams(self, ctx:LangParser.ParamsContext):
         pass
