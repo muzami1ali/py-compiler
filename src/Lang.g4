@@ -60,11 +60,12 @@ params: '(' (param (',' param)* )* ')';
 
 func_call: var params ;
 
+aop_var : var '=' a_op;
 int_var : var '=' int;
 float_var: var '=' float;
 bool_var : var '=' bool;
 
-var_decl : int_var | float_var | bool_var;
+var_decl : int_var | float_var | bool_var | aop_var;
 
 function: 'def' var params ':' exp+ ;
 

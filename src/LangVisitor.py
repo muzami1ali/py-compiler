@@ -84,6 +84,11 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#aop_var.
+    def visitAop_var(self, ctx:LangParser.Aop_varContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#int_var.
     def visitInt_var(self, ctx:LangParser.Int_varContext):
         return self.visitChildren(ctx)

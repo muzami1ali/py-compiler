@@ -53,3 +53,25 @@ def printf(builder, format, num, *args):
     # Call
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt] + list(args))
+
+def print_func(builder, num, func_param):
+    i = func_param[0]
+    typ = i[1]
+    if typ=="IntVar":
+        res = builder.load(i[0])
+        printf(builder, "%d\n", num, res)
+    elif typ=="FloatVar":
+        res = builder.load(i[0])
+        res1 = builder.fpext(res, ir.DoubleType())
+        printf(builder, "%f\n", num, res1)
+    if typ=="DoubleVar":
+        res = builder.load(i[0])
+        printf(builder, "%f\n", num, res)
+    elif typ=="IntVal":
+        printf(builder, "%d\n", num, i[0])
+    elif typ=="FloatVal":
+        res = builder.fpext(i[0], ir.DoubleType())
+        printf(builder, "%f\n", num, res)
+    elif typ=="DoubleVal":
+        printf(builder, "%f\n", num, i[0])
+

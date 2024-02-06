@@ -143,6 +143,15 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#aop_var.
+    def enterAop_var(self, ctx:LangParser.Aop_varContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#aop_var.
+    def exitAop_var(self, ctx:LangParser.Aop_varContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#int_var.
     def enterInt_var(self, ctx:LangParser.Int_varContext):
         pass

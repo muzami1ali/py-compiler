@@ -4,15 +4,17 @@ from LangParser import LangParser
 from LangVisitor import LangVisitor
 from llvmlite import ir
 import llvmlite.binding as llvm
-from util import printf
+from util import printf, print_func
 from arithmetic import *
 import re
 def checkType(ty): 
     match ty:
-        case "Int":
+        case "IntVar":
             return ir.IntType(32)
-        case "Float":
+        case "FloatVar":
             return ir.FloatType()
+        case "DoubleVar":
+            return ir.DoubleType()
         case _:
             return ir.IntType(1)
 
@@ -50,9 +52,9 @@ class IRGenerator(LangVisitor):
         f.write(str(self.module))
         f.close()
 
-        print(self.address_table)
-        print(self.symbol_table)
-        print(self.module.functions)
+        # print(self.address_table)
+        # print(self.symbol_table)
+        # print(self.module.functions)
         print(str(self.module))
         return 0
 
@@ -173,41 +175,33 @@ class IRGenerator(LangVisitor):
     def visitFunc_call(self, ctx:LangParser.Func_callContext):
         func_name  = self.visit(ctx.getChild(0))[0]
         func_param = self.visit(ctx.getChild(1))
-        print(func_param[0])
         if (func_name == "print"):
-            i = func_param[0]
-            typ = i[1]
-            if typ=="Int":
-                res = self.builder.load(i[0])
-                printf(self.builder, "%d\n", self.num, res)
-                self.num += 1
-            elif typ=="Float":
-                res = self.builder.load(i[0])
-                res1 = self.builder.fpext(res, ir.DoubleType())
-                printf(self.builder, "%f\n", self.num, res1)
-                self.num += 1
-            elif typ=="IntVal":
-                printf(self.builder, "%d\n", self.num, i[0])
-                self.num += 1
-            elif typ=="FloatVal":
-                res = self.builder.fpext(i[0], ir.DoubleType())
-                printf(self.builder, "%f\n", self.num, res)
-                self.num += 1
+            print_func(self.builder,self.num,func_param)
+            self.num += 1
         return 0
+
+    def visitAop_var(self, ctx:LangParser.Aop_varContext):
+        var_name = self.visit(ctx.getChild(0))[0]
+        aop  = self.visit(ctx.getChild(2))
+        aop_val = aop[0]
+        aop_typ = aop[1]
+        typ = re.sub("Val","Var",aop_typ)
+        return (var_name,aop_val,typ)
+
 
 
     # Visit a parse tree produced by LangParser#int_var.
     def visitInt_var(self, ctx:LangParser.Int_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         val  = self.visit(ctx.getChild(2))[0]
-        return (var_name, val, "Int")
+        return (var_name, val, "IntVar")
 
 
     # Visit a parse tree produced by LangParser#float_var.
     def visitFloat_var(self, ctx:LangParser.Float_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         val  = self.visit(ctx.getChild(2))[0]
-        return (var_name, val, "Float")
+        return (var_name, val, "FloatVar")
 
 
     # Visit a parse tree produced by LangParser#bool_var.
