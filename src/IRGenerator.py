@@ -116,21 +116,27 @@ class IRGenerator(LangVisitor):
             op = ctx.getChild(1).getText()
             lhs = self.visit(ctx.getChild(0))
             rhs = self.visit(ctx.getChild(2))
-
-            match op:
-                case "/":
-                    return self.builder.udiv(lhs,rhs)
-                case "*":
-                    return self.builder.mul(lhs,rhs)
-                case "%":
-                    return self.builder.urem(lhs,rhs)
+            return aop(op,lhs,rhs,self.builder, self.symbol_table,self.address_table)
+            # match op:
+            #     case "/":
+            #         return self.builder.udiv(lhs,rhs)
+            #     case "*":
+            #         return self.builder.mul(lhs,rhs)
+            #     case "%":
+            #         return self.builder.urem(lhs,rhs)
                 # case "//":
                 #     return self.builder.mul(lhs,rhs)
 
     # Visit a parse tree produced by LangParser#aop2.
     def visitAop2(self, ctx:LangParser.Aop2Context):
-        return self.visit(ctx.getChild(0))
-        
+        if ctx.getChildCount() == 1:
+            return self.visit(ctx.getChild(0))
+        if ctx.getChildCount() == 3:
+            op = ctx.getChild(1).getText()
+            lhs = self.visit(ctx.getChild(0))
+            rhs = self.visit(ctx.getChild(2))
+            return aop(op,lhs,rhs,self.builder, self.symbol_table,self.address_table)
+
 
 
     # Visit a parse tree produced by LangParser#aop1.

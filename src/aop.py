@@ -27,3 +27,13 @@ print(foo - bar1 + foo1)
 print(foo - bar1 + foo1 + 200)
 
 print(foo + foo - foo)
+
+print(7 // 3)
+print(7/3)
+
+print(7.5// 2.6)
+
+print(2**6)
+print(20.4**2)
+
+

@@ -108,6 +108,31 @@ entry:
   %".98" = sub i32 %".96", %".97"
   %".99" = bitcast [4 x i8]* @"printf_format_14" to i8*
   %".100" = call i32 (i8*, ...) @"printf"(i8* %".99", i32 %".98")
+  %".101" = sdiv i32 7, 3
+  %".102" = bitcast [4 x i8]* @"printf_format_15" to i8*
+  %".103" = call i32 (i8*, ...) @"printf"(i8* %".102", i32 %".101")
+  %".104" = sitofp i32 7 to float
+  %".105" = sitofp i32 3 to float
+  %".106" = fdiv float %".104", %".105"
+  %".107" = fpext float %".106" to double
+  %".108" = bitcast [4 x i8]* @"printf_format_16" to i8*
+  %".109" = call i32 (i8*, ...) @"printf"(i8* %".108", double %".107")
+  %".110" = fdiv float 0x401e000000000000, 0x4004ccccc0000000
+  %".111" = fpext float %".110" to double
+  %".112" = call double @"floor"(double %".111")
+  %".113" = bitcast [4 x i8]* @"printf_format_17" to i8*
+  %".114" = call i32 (i8*, ...) @"printf"(i8* %".113", double %".112")
+  %".115" = sitofp i32 2 to double
+  %".116" = sitofp i32 6 to double
+  %".117" = call double @"pow"(double %".115", double %".116")
+  %".118" = bitcast [4 x i8]* @"printf_format_18" to i8*
+  %".119" = call i32 (i8*, ...) @"printf"(i8* %".118", double %".117")
+  %".120" = sitofp i32 2 to float
+  %".121" = fpext float 0x4034666660000000 to double
+  %".122" = fpext float %".120" to double
+  %".123" = call double @"pow"(double %".121", double %".122")
+  %".124" = bitcast [4 x i8]* @"printf_format_19" to i8*
+  %".125" = call i32 (i8*, ...) @"printf"(i8* %".124", double %".123")
   ret i32 0
 }
 
@@ -128,3 +153,12 @@ declare i32 @"printf"(i8* %".1", ...)
 @"printf_format_12" = internal constant [4 x i8] c"%f\0a\00"
 @"printf_format_13" = internal constant [4 x i8] c"%f\0a\00"
 @"printf_format_14" = internal constant [4 x i8] c"%d\0a\00"
+@"printf_format_15" = internal constant [4 x i8] c"%d\0a\00"
+@"printf_format_16" = internal constant [4 x i8] c"%f\0a\00"
+declare double @"floor"(double %".1")
+
+@"printf_format_17" = internal constant [4 x i8] c"%f\0a\00"
+declare double @"pow"(double %".1", double %".2")
+
+@"printf_format_18" = internal constant [4 x i8] c"%f\0a\00"
+@"printf_format_19" = internal constant [4 x i8] c"%f\0a\00"
