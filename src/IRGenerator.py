@@ -173,7 +173,8 @@ class IRGenerator(LangVisitor):
         func_name  = self.visit(ctx.getChild(0))[0]
         func_param = self.visit(ctx.getChild(1))
         if (func_name == "print"):
-            self.num = print_func(self.builder,self.num,func_param)
+            print_func(self.builder,self.num,func_param)
+            self.num = self.num + 1
         return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):

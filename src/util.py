@@ -60,7 +60,6 @@ def printf(builder, format, num, *args):
 
 
 def print_func(builder, num, func_param):
-    number = num
     i = func_param[0]
     typ = i[1]
     if typ=="IntVar":
@@ -81,18 +80,34 @@ def print_func(builder, num, func_param):
     elif typ=="DoubleVal":
         printf(builder, "%f\n", num, i[0])
     elif typ=="BoolVal":
-        number = print_bool(builder, num, i[0])
-    number = number + 1
-    return number
+        print_bool(builder, i[0])
 
-def print_bool(builder,num, val):
-    number = num
+def print_bool(builder, val):
     res = builder.icmp_unsigned("==",val,true)
     with builder.if_else(res) as (then, otherwise):
         with then:
-            printf(builder, "True\n", num)
-            number = num + 1
+            printb(builder, "True")
         with otherwise:
-            printf(builder, "False\n", number)
-    return number
+            printb(builder, "False")
+
+def printb(builder, format):
+    assert isinstance(format, str)
+    mod = builder.module
+    # Make global constant for format string
+    cstring = voidptr_t
+    try:
+        global_fmt = mod.get_global(f"printf_format_{format}")
+    except KeyError:
+        fmt_bytes = make_bytearray((format + '\n\00').encode('ascii'))
+        global_fmt = global_constant(mod, f"printf_format_{format}", fmt_bytes)
+    fnty = ir.FunctionType(int32_t, [cstring], var_arg=True)
+    # Insert printf()
+    try:
+        fn = mod.get_global("printf")
+    except KeyError:
+        fn = ir.Function(mod, fnty, name="printf")
+    # Call
+    ptr_fmt = builder.bitcast(global_fmt, cstring)
+    return builder.call(fn, [ptr_fmt])
+
 
