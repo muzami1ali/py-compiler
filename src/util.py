@@ -1,7 +1,7 @@
 # Ref:Numba
 from llvmlite import ir
 
-
+int1_t = ir.IntType(1)
 int8_t = ir.IntType(8)
 int32_t = ir.IntType(32)
 voidptr_t = int8_t.as_pointer()
@@ -74,7 +74,7 @@ def print_func(builder, num, func_param):
         printf(builder, "%f\n", num, res)
     elif typ=="BoolVar":
         res = builder.load(i[0])
-        print_bool(builder, num, res)
+        print_bool(builder, res)
         # return num
     elif typ=="IntVal":
         printf(builder, "%d\n", num, i[0])
@@ -84,23 +84,9 @@ def print_func(builder, num, func_param):
     elif typ=="DoubleVal":
         printf(builder, "%f\n", num, i[0])
     elif typ=="BoolVal":
-        print_bool(builder, num, i[0])
+        print_bool(builder, i[0])
         # return num
     # return (num + 1)
-
-
-def print_bool(builder, num, val):
-    true_block = builder.append_basic_block(f"print_bool_if_{num}")
-    false_block = builder.append_basic_block(f"print_bool_else_{num}")
-    end_block = builder.append_basic_block(f"print_bool_endif_{num}")
-    builder.cbranch(val,true_block,false_block)
-    builder.position_at_start(true_block)
-    printb(builder, "True")
-    builder.branch(end_block)
-    builder.position_at_start(false_block)
-    printb(builder, "False")
-    builder.branch(end_block)
-    builder.position_at_start(end_block)
 
 
 def printb(builder, format):
@@ -122,5 +108,37 @@ def printb(builder, format):
     # Call
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt])
+
+def print_bool(sbuilder, res):
+    mod = sbuilder.module
+  
+    func_typ = ir.FunctionType(int32_t, [int1_t])
+
+    try:
+        func = mod.get_global("print_bool")
+    except KeyError:
+        func = ir.Function(mod, func_typ, name="print_bool")
+        val = func.args
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        true_block = func.append_basic_block(f"print_bool_if")
+        false_block = func.append_basic_block(f"print_bool_else")
+        end_block = func.append_basic_block(f"print_bool_endif")
+        builder.cbranch(val[0],true_block,false_block)
+        builder.position_at_start(true_block)
+        printb(builder, "True")
+        builder.branch(end_block)
+        builder.position_at_start(false_block)
+        printb(builder, "False")
+        builder.branch(end_block)
+        builder.position_at_start(end_block)
+        builder.ret(ir.Constant(int32_t, 0))
+
+    return sbuilder.call(func,[res])
+
+
+
+    
+
 
 
