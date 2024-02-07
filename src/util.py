@@ -5,6 +5,8 @@ from llvmlite import ir
 int8_t = ir.IntType(8)
 int32_t = ir.IntType(32)
 voidptr_t = int8_t.as_pointer()
+true = ir.Constant(ir.IntType(1), 1)
+false = ir.Constant(ir.IntType(1), 0)
 
 
 def make_bytearray(buf):
@@ -67,9 +69,13 @@ def print_func(builder, num, func_param):
         res = builder.load(i[0])
         res1 = builder.fpext(res, ir.DoubleType())
         printf(builder, "%f\n", num, res1)
-    if typ=="DoubleVar":
+    elif typ=="DoubleVar":
         res = builder.load(i[0])
         printf(builder, "%f\n", num, res)
+    elif typ=="BoolVar":
+        res = builder.load(i[0])
+        print_bool(builder, num, res)
+        # return num
     elif typ=="IntVal":
         printf(builder, "%d\n", num, i[0])
     elif typ=="FloatVal":
@@ -77,4 +83,44 @@ def print_func(builder, num, func_param):
         printf(builder, "%f\n", num, res)
     elif typ=="DoubleVal":
         printf(builder, "%f\n", num, i[0])
+    elif typ=="BoolVal":
+        print_bool(builder, num, i[0])
+        # return num
+    # return (num + 1)
+
+
+def print_bool(builder, num, val):
+    true_block = builder.append_basic_block(f"print_bool_if_{num}")
+    false_block = builder.append_basic_block(f"print_bool_else_{num}")
+    end_block = builder.append_basic_block(f"print_bool_endif_{num}")
+    builder.cbranch(val,true_block,false_block)
+    builder.position_at_start(true_block)
+    printb(builder, "True")
+    builder.branch(end_block)
+    builder.position_at_start(false_block)
+    printb(builder, "False")
+    builder.branch(end_block)
+    builder.position_at_start(end_block)
+
+
+def printb(builder, format):
+    assert isinstance(format, str)
+    mod = builder.module
+    # Make global constant for format string
+    cstring = voidptr_t
+    try:
+        global_fmt = mod.get_global(f"printf_format_{format}")
+    except KeyError:
+        fmt_bytes = make_bytearray((format + '\n\00').encode('ascii'))
+        global_fmt = global_constant(mod, f"printf_format_{format}", fmt_bytes)
+    fnty = ir.FunctionType(int32_t, [cstring], var_arg=True)
+    # Insert printf()
+    try:
+        fn = mod.get_global("printf")
+    except KeyError:
+        fn = ir.Function(mod, fnty, name="printf")
+    # Call
+    ptr_fmt = builder.bitcast(global_fmt, cstring)
+    return builder.call(fn, [ptr_fmt])
+
 

@@ -6,8 +6,11 @@ from llvmlite import ir
 import llvmlite.binding as llvm
 from util import printf, print_func
 from arithmetic import *
+from boolean import *
 import re
 
+true = ir.Constant(ir.IntType(1), 1)
+false = ir.Constant(ir.IntType(1), 0)
 
 def checkType(ty): 
     match ty:
@@ -17,7 +20,7 @@ def checkType(ty):
             return ir.FloatType()
         case "DoubleVar":
             return ir.DoubleType()
-        case _:
+        case "BoolVar":
             return ir.IntType(1)
 
 class IRGenerator(LangVisitor):
@@ -95,9 +98,9 @@ class IRGenerator(LangVisitor):
     def visitBool(self, ctx:LangParser.BoolContext):
         bool_val = ctx.getText()
         if (bool_val == "False"):   
-            return ir.Constant(ir.IntType(1), 0)
+            return (false, "BoolVal")
         else:
-            return ir.Constant(ir.IntType(1), 1)
+            return (true, "BoolVal")
 
 
 
@@ -142,7 +145,18 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#b_op.
     def visitB_op(self, ctx:LangParser.B_opContext):
-        return self.visitChildren(ctx)
+        if ctx.getChildCount() == 1:
+            return self.visit(ctx.getChild(0))
+        if ctx.getChildCount() == 2:
+            # Satisfying the not condition
+            res = self.visit(ctx.getChild(1))
+            return bop_not(self.builder,res,self.symbol_table,self.address_table)
+        if ctx.getChildCount() == 3:
+            op = ctx.getChild(1).getText()
+            lhs = self.visit(ctx.getChild(0))
+            rhs = self.visit(ctx.getChild(2))
+            return bop(op,lhs,rhs,self.builder, self.symbol_table,self.address_table)
+         
 
     def visitParam(self, ctx:LangParser.ParamContext):
         if(ctx.getChild(0).getRuleIndex()==3):
@@ -170,8 +184,9 @@ class IRGenerator(LangVisitor):
         func_name  = self.visit(ctx.getChild(0))[0]
         func_param = self.visit(ctx.getChild(1))
         if (func_name == "print"):
+            # self.num = print_func(self.builder,self.num,func_param)
             print_func(self.builder,self.num,func_param)
-            self.num += 1
+            self.num = self.num + 1
         return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
@@ -201,8 +216,8 @@ class IRGenerator(LangVisitor):
     # Visit a parse tree produced by LangParser#bool_var.
     def visitBool_var(self, ctx:LangParser.Bool_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
-        val  = self.visit(ctx.getChild(2))
-        return (var_name, val, "Bool")
+        val  = self.visit(ctx.getChild(2))[0]
+        return (var_name, val, "BoolVar")
 
 
     # Visit a parse tree produced by LangParser#var_decl.

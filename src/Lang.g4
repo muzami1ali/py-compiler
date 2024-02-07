@@ -8,7 +8,7 @@ ID: [a-zA-Z_] [a-zA-Z0-9_]*;
 HID: '__' ID '__';
 INT: [0-9]+ ;
 FLOAT: [0-9]+ '.' [0-9]+ ;
-KWD: 'def' | 'if' ;
+KWD: 'def' | 'if' | 'and' | 'or' | 'not' ;
 SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':' 
    | '_' | '.' | '%' | '|' 
     ;
@@ -52,9 +52,14 @@ b_op : a_op '>' a_op
     | a_op '>=' a_op
     | a_op '==' a_op
     | a_op '!=' a_op
+    | b_op 'and' b_op
+    | b_op 'or' b_op
+    | 'not' b_op
+    | bool
+    | var
     ;
 
-param: var | a_op ;
+param: var | a_op | b_op;
 
 params: '(' (param (',' param)* )* ')';
 
@@ -63,7 +68,7 @@ func_call: var params ;
 aop_var : var '=' a_op;
 int_var : var '=' int;
 float_var: var '=' float;
-bool_var : var '=' bool;
+bool_var : var '=' b_op;
 
 var_decl : int_var | float_var | bool_var | aop_var;
 
