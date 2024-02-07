@@ -1,4 +1,5 @@
 from llvmlite import ir
+import re
 
 
 def bop(op,lhs,rhs,builder,symT,addrT):
@@ -18,6 +19,8 @@ def bop(op,lhs,rhs,builder,symT,addrT):
     if rhs_typ == lhs_typ:
         if lhs_typ == "IntVal":
             return (builder.icmp_signed(op,lhs_val,rhs_val), "BoolVal")
+        elif lhs_typ == "BoolVal":
+            return bop_condition(builder, op, lhs_val, rhs_val)
         else:
             return (builder.fcmp_ordered(op,lhs_val,rhs_val), "BoolVal")
     else:
@@ -43,4 +46,20 @@ def bop(op,lhs,rhs,builder,symT,addrT):
             rhs_val = builder.fpext(rhs_val, ir.DoubleType())
             return (builder.fcmp_ordered(op,lhs_val,rhs_val), "BoolVal")
 
+
+def bop_condition(builder,op,lhs,rhs):
+    match op:
+        case 'and':
+            return (builder.and_(lhs,rhs), "BoolVal")
+        case 'or':
+            return (builder.or_(lhs,rhs), "BoolVal")
+
+def bop_not(builder, res, symT, addrT):
+    res_val = res[0]
+    res_typ = res[1]
+    if res_typ == "Var":
+        res_typ = re.sub("Var", "Val", symT[res_val])
+        addr = addrT[res_val]
+        res_val = builder.load(addr)
+    return (builder.not_(res_val), res_typ)
 

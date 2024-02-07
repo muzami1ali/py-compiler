@@ -20,7 +20,7 @@ def checkType(ty):
             return ir.FloatType()
         case "DoubleVar":
             return ir.DoubleType()
-        case _:
+        case "BoolVar":
             return ir.IntType(1)
 
 class IRGenerator(LangVisitor):
@@ -147,6 +147,10 @@ class IRGenerator(LangVisitor):
     def visitB_op(self, ctx:LangParser.B_opContext):
         if ctx.getChildCount() == 1:
             return self.visit(ctx.getChild(0))
+        if ctx.getChildCount() == 2:
+            # Satisfying the not condition
+            res = self.visit(ctx.getChild(1))
+            return bop_not(self.builder,res,self.symbol_table,self.address_table)
         if ctx.getChildCount() == 3:
             op = ctx.getChild(1).getText()
             lhs = self.visit(ctx.getChild(0))
