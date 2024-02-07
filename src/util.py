@@ -74,8 +74,8 @@ def print_func(builder, num, func_param):
         printf(builder, "%f\n", num, res)
     elif typ=="BoolVar":
         res = builder.load(i[0])
-        print_bool(builder, res)
-        return num
+        print_bool(builder, num, res)
+        # return num
     elif typ=="IntVal":
         printf(builder, "%d\n", num, i[0])
     elif typ=="FloatVal":
@@ -84,16 +84,37 @@ def print_func(builder, num, func_param):
     elif typ=="DoubleVal":
         printf(builder, "%f\n", num, i[0])
     elif typ=="BoolVal":
-        print_bool(builder, i[0])
-        return num
-    return (num + 1)
+        print_bool(builder, num, i[0])
+        # return num
+    # return (num + 1)
 
-def print_bool(builder, val):
-    with builder.if_else(val) as (then, otherwise):
-        with then:
-            printb(builder, "True")
-        with otherwise:
-            printb(builder, "False")
+def print_bool(builder, num, val):
+    # outer_block= builder.block
+    true_block = builder.append_basic_block(f"print_bool_if{num}")
+    false_block = builder.append_basic_block(f"print_bool_else{num}")
+    end_block = builder.append_basic_block(f"print_bool_endif{num}")
+    builder.cbranch(val,true_block,false_block)
+    builder.position_at_start(true_block)
+    printb(builder, "True")
+    builder.branch(end_block)
+    builder.position_at_start(false_block)
+    printb(builder, "False")
+    builder.branch(end_block)
+    builder.position_at_start(end_block)
+
+
+
+    # builder.position_at_start(inner_block)
+    # with builder.goto_block(inner_block):
+    # with builder.if_else(val) as (then, otherwise):
+    #     builder.position_at_start(inner_block)
+    #     with then:
+    #         printb(builder, "True")
+    #     with otherwise:
+    #         printb(builder, "False")
+    #
+    # print(builder.block)
+    # builder.position_at_end(inner_block)
 
 def printb(builder, format):
     assert isinstance(format, str)

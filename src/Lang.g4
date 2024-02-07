@@ -8,7 +8,7 @@ ID: [a-zA-Z_] [a-zA-Z0-9_]*;
 HID: '__' ID '__';
 INT: [0-9]+ ;
 FLOAT: [0-9]+ '.' [0-9]+ ;
-KWD: 'def' | 'if' ;
+KWD: 'def' | 'if' | 'and' | 'or' | 'not' ;
 SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':' 
    | '_' | '.' | '%' | '|' 
     ;
@@ -52,7 +52,11 @@ b_op : a_op '>' a_op
     | a_op '>=' a_op
     | a_op '==' a_op
     | a_op '!=' a_op
+    | b_op 'and' b_op
+    | b_op 'or' b_op
+    | 'not' b_op
     | bool
+    | var
     ;
 
 param: var | a_op | b_op;
