@@ -69,9 +69,13 @@ def print_func(builder, num, func_param):
         res = builder.load(i[0])
         res1 = builder.fpext(res, ir.DoubleType())
         printf(builder, "%f\n", num, res1)
-    if typ=="DoubleVar":
+    elif typ=="DoubleVar":
         res = builder.load(i[0])
         printf(builder, "%f\n", num, res)
+    elif typ=="BoolVar":
+        res = builder.load(i[0])
+        print_bool(builder, res)
+        return num
     elif typ=="IntVal":
         printf(builder, "%d\n", num, i[0])
     elif typ=="FloatVal":
@@ -81,10 +85,11 @@ def print_func(builder, num, func_param):
         printf(builder, "%f\n", num, i[0])
     elif typ=="BoolVal":
         print_bool(builder, i[0])
+        return num
+    return (num + 1)
 
 def print_bool(builder, val):
-    res = builder.icmp_unsigned("==",val,true)
-    with builder.if_else(res) as (then, otherwise):
+    with builder.if_else(val) as (then, otherwise):
         with then:
             printb(builder, "True")
         with otherwise:

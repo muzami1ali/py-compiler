@@ -64,7 +64,7 @@ func_call: var params ;
 aop_var : var '=' a_op;
 int_var : var '=' int;
 float_var: var '=' float;
-bool_var : var '=' bool;
+bool_var : var '=' b_op;
 
 var_decl : int_var | float_var | bool_var | aop_var;
 

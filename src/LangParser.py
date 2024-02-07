@@ -69,7 +69,7 @@ def serializedATN():
         166,3,14,7,0,166,31,1,0,0,0,167,168,3,6,3,0,168,169,5,17,0,0,169,
         170,3,8,4,0,170,33,1,0,0,0,171,172,3,6,3,0,172,173,5,17,0,0,173,
         174,3,10,5,0,174,35,1,0,0,0,175,176,3,6,3,0,176,177,5,17,0,0,177,
-        178,3,12,6,0,178,37,1,0,0,0,179,184,3,32,16,0,180,184,3,34,17,0,
+        178,3,22,11,0,178,37,1,0,0,0,179,184,3,32,16,0,180,184,3,34,17,0,
         181,184,3,36,18,0,182,184,3,30,15,0,183,179,1,0,0,0,183,180,1,0,
         0,0,183,181,1,0,0,0,183,182,1,0,0,0,184,39,1,0,0,0,185,186,5,18,
         0,0,186,187,3,6,3,0,187,188,3,26,13,0,188,190,5,19,0,0,189,191,3,
@@ -1401,8 +1401,8 @@ class LangParser ( Parser ):
             return self.getTypedRuleContext(LangParser.VarContext,0)
 
 
-        def bool_(self):
-            return self.getTypedRuleContext(LangParser.BoolContext,0)
+        def b_op(self):
+            return self.getTypedRuleContext(LangParser.B_opContext,0)
 
 
         def getRuleIndex(self):
@@ -1436,7 +1436,7 @@ class LangParser ( Parser ):
             self.state = 176
             self.match(LangParser.T__16)
             self.state = 177
-            self.bool_()
+            self.b_op()
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

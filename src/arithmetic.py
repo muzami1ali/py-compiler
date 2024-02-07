@@ -129,9 +129,9 @@ def aop(op,lhs,rhs,builder,symT,addrT):
                 rhs_val = builder.sitofp(rhs_val, ir.DoubleType())
                 return double_op(op,lhs_val,rhs_val,builder)
         elif lhs_typ == "FloatVal":
-            lhs = builder.fpext(lhs, ir.DoubleType())
+            lhs_val = builder.fpext(lhs_val, ir.DoubleType())
             return double_op(op,lhs_val,rhs_val,builder)
         elif rhs_typ == "FloatVal":
-            rhs = builder.fpext(rhs, ir.DoubleType())
+            rhs_val = builder.fpext(rhs_val, ir.DoubleType())
             return double_op(op,lhs_val,rhs_val,builder)
 
