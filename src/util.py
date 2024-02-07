@@ -5,6 +5,8 @@ from llvmlite import ir
 int8_t = ir.IntType(8)
 int32_t = ir.IntType(32)
 voidptr_t = int8_t.as_pointer()
+true = ir.Constant(ir.IntType(1), 1)
+false = ir.Constant(ir.IntType(1), 0)
 
 
 def make_bytearray(buf):
@@ -58,6 +60,7 @@ def printf(builder, format, num, *args):
 
 
 def print_func(builder, num, func_param):
+    number = num
     i = func_param[0]
     typ = i[1]
     if typ=="IntVar":
@@ -77,4 +80,19 @@ def print_func(builder, num, func_param):
         printf(builder, "%f\n", num, res)
     elif typ=="DoubleVal":
         printf(builder, "%f\n", num, i[0])
+    elif typ=="BoolVal":
+        number = print_bool(builder, num, i[0])
+    number = number + 1
+    return number
+
+def print_bool(builder,num, val):
+    number = num
+    res = builder.icmp_unsigned("==",val,true)
+    with builder.if_else(res) as (then, otherwise):
+        with then:
+            printf(builder, "True\n", num)
+            number = num + 1
+        with otherwise:
+            printf(builder, "False\n", number)
+    return number
 

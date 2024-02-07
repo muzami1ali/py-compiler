@@ -52,9 +52,10 @@ b_op : a_op '>' a_op
     | a_op '>=' a_op
     | a_op '==' a_op
     | a_op '!=' a_op
+    | bool
     ;
 
-param: var | a_op ;
+param: var | a_op | b_op;
 
 params: '(' (param (',' param)* )* ')';
 

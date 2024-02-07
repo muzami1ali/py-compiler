@@ -8,6 +8,8 @@ from util import printf, print_func
 from arithmetic import *
 import re
 
+true = ir.Constant(ir.IntType(1), 1)
+false = ir.Constant(ir.IntType(1), 0)
 
 def checkType(ty): 
     match ty:
@@ -95,9 +97,9 @@ class IRGenerator(LangVisitor):
     def visitBool(self, ctx:LangParser.BoolContext):
         bool_val = ctx.getText()
         if (bool_val == "False"):   
-            return ir.Constant(ir.IntType(1), 0)
+            return (false, "BoolVal")
         else:
-            return ir.Constant(ir.IntType(1), 1)
+            return (true, "BoolVal")
 
 
 
@@ -142,7 +144,8 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#b_op.
     def visitB_op(self, ctx:LangParser.B_opContext):
-        return self.visitChildren(ctx)
+        if ctx.getChildCount() == 1:
+            return self.visit(ctx.getChild(0))
 
     def visitParam(self, ctx:LangParser.ParamContext):
         if(ctx.getChild(0).getRuleIndex()==3):
@@ -170,8 +173,7 @@ class IRGenerator(LangVisitor):
         func_name  = self.visit(ctx.getChild(0))[0]
         func_param = self.visit(ctx.getChild(1))
         if (func_name == "print"):
-            print_func(self.builder,self.num,func_param)
-            self.num += 1
+            self.num = print_func(self.builder,self.num,func_param)
         return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
