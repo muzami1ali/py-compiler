@@ -19,35 +19,24 @@ entry:
   %".12" = fadd double %".11", %".10"
   %"munch" = alloca double
   store double %".12", double* %"munch"
-  %".14" = load double, double* %"munch"
-  %".15" = bitcast [4 x i8]* @"printf_format_0" to i8*
-  %".16" = call i32 (i8*, ...) @"printf"(i8* %".15", double %".14")
   %"munch.1" = alloca i32
   store i32 3, i32* %"munch.1"
-  %".18" = load i32, i32* %"munch.1"
-  %".19" = bitcast [4 x i8]* @"printf_format_1" to i8*
-  %".20" = call i32 (i8*, ...) @"printf"(i8* %".19", i32 %".18")
-  %".21" = load i32, i32* %"munch.1"
-  %".22" = sitofp i32 %".21" to double
-  %".23" = sitofp i32 3 to double
-  %".24" = call double @"pow"(double %".22", double %".23")
+  %".15" = load i32, i32* %"munch.1"
+  %".16" = sitofp i32 %".15" to double
+  %".17" = sitofp i32 3 to double
+  %".18" = call double @"pow"(double %".16", double %".17")
   %"munch.2" = alloca double
-  store double %".24", double* %"munch.2"
-  %".26" = load double, double* %"munch.2"
-  %".27" = bitcast [4 x i8]* @"printf_format_2" to i8*
-  %".28" = call i32 (i8*, ...) @"printf"(i8* %".27", double %".26")
-  %".29" = add i32 10, 20
-  %".30" = add i32 10, 20
-  %".31" = add i32 10, 20
+  store double %".18", double* %"munch.2"
+  %".20" = add i32 10, 20
+  %".21" = add i32 10, 20
+  %".22" = add i32 10, 20
+  %".23" = add i32 10, 20
+  %".24" = add i32 10, 20
+  %".25" = add i32 10, 20
+  %".26" = add i32 20, 30
   ret i32 0
 }
 
 declare double @"pow"(double %".1", double %".2")
 
 declare double @"floor"(double %".1")
-
-@"printf_format_0" = internal constant [4 x i8] c"%f\0a\00"
-declare i32 @"printf"(i8* %".1", ...)
-
-@"printf_format_1" = internal constant [4 x i8] c"%d\0a\00"
-@"printf_format_2" = internal constant [4 x i8] c"%f\0a\00"

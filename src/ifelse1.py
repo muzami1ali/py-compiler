@@ -5,14 +5,20 @@ munch = 3
 print(munch)
 munch = munch ** 3
 print(munch)
-
-if (True):
-    if (False):
-        True
-   10+20
+if(True):
+    10+20
 elif (False):
     10+20
 else:
     10+20
 10+20
 
+if(True):
+
+    10+20
+
+    if(False):
+        10+20
+
+else: 
+    20 +30
