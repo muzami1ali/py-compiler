@@ -2,26 +2,35 @@
 grammar Lang;
 
 // lexer rules 
-COMMENT: '#' .*? [\n\r] -> skip;
+@lexer::members {    self.nesting = 0}
+COMMENT: '#' ~[\r\n]* -> skip;
 BOOL: 'True' | 'False';
 ID: [a-zA-Z_] [a-zA-Z0-9_]*;
 HID: '__' ID '__';
 INT: [0-9]+ ;
 FLOAT: [0-9]+ '.' [0-9]+ ;
-KWD: 'def' | 'if' | 'and' | 'or' | 'not' ;
+KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not' ;
 SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':' 
    | '_' | '.' | '%' | '|' 
     ;
-PAREN: '(' | ')';
-WS : [ \t\n\r]+ -> skip ;
+//IGNORE_NEWLINE: '\r'? '\n' {self.nesting>0}? -> skip;
+LPAREN: '(' {self.nesting += 1} ;
+RPAREN: ')' {self.nesting -= 1} ;
+LBRACK: '[' {self.nesting += 1} ;
+RBRACK: ']' {self.nesting -= 1} ;
+NEWLINE: '\r'? '\n' {self.nesting==0}? ;
+INDENT: '    '+ | '\t';
+WS : [ ] -> skip ;
+LINE_ESCAPE: '\\' '\r'? '\n' -> skip ;
 
 // ###########################################################
 
 // parser rules
-prog : file EOF;
-file :  exp*;
+newl_ignore : (NEWLINE)*;
+prog : newl_ignore file newl_ignore EOF;
+file :  (exp (NEWLINE)+)*;
 
-exp : var_decl | a_op | b_op | func_call;
+exp : var_decl | a_op | b_op | func_call | if_statement;
 
 var : ID;
 int : INT;
@@ -75,6 +84,18 @@ var_decl : int_var | float_var | bool_var | aop_var;
 function: 'def' var params ':' exp+ ;
 
 main_func: 'if __name__ == "__main__" :' exp+;
+
+indent: INDENT;
+block_end: (indent exp);
+block_stmt: indent exp NEWLINE;
+block_middle: block_stmt*;
+exp_block: block_middle block_stmt | block_middle block_end ;
+
+if_param: (( '(' b_op ')' ) | b_op ) ':';
+if: 'if' if_param NEWLINE exp_block;
+elif: 'elif' if_param NEWLINE exp_block;
+else: 'else' ':' NEWLINE exp_block;
+if_statement: if elif* else?;
 
 
 

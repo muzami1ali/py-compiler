@@ -50,7 +50,7 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#prog.
     def visitProg(self, ctx:LangParser.ProgContext):
-        self.visit(ctx.getChild(0))
+        self.visit(ctx.getChild(1))
         self.builder.ret(ir.Constant(ir.IntType(32), 0))
 
         f = open(f"{self.dir}.ll", "w")
@@ -159,7 +159,7 @@ class IRGenerator(LangVisitor):
          
 
     def visitParam(self, ctx:LangParser.ParamContext):
-        if(ctx.getChild(0).getRuleIndex()==3):
+        if(ctx.getChild(0).getRuleIndex()==4): #Var rule index is 4
             param = (self.visit(ctx.getChild(0)))[0]
             param_type = self.symbol_table[param]
             return (self.address_table[param],param_type)

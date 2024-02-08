@@ -8,6 +8,15 @@ else:
 # This class defines a complete listener for a parse tree produced by LangParser.
 class LangListener(ParseTreeListener):
 
+    # Enter a parse tree produced by LangParser#newl_ignore.
+    def enterNewl_ignore(self, ctx:LangParser.Newl_ignoreContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#newl_ignore.
+    def exitNewl_ignore(self, ctx:LangParser.Newl_ignoreContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#prog.
     def enterProg(self, ctx:LangParser.ProgContext):
         pass
@@ -203,6 +212,96 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#main_func.
     def exitMain_func(self, ctx:LangParser.Main_funcContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#indent.
+    def enterIndent(self, ctx:LangParser.IndentContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#indent.
+    def exitIndent(self, ctx:LangParser.IndentContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#block_end.
+    def enterBlock_end(self, ctx:LangParser.Block_endContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#block_end.
+    def exitBlock_end(self, ctx:LangParser.Block_endContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#block_stmt.
+    def enterBlock_stmt(self, ctx:LangParser.Block_stmtContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#block_stmt.
+    def exitBlock_stmt(self, ctx:LangParser.Block_stmtContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#block_middle.
+    def enterBlock_middle(self, ctx:LangParser.Block_middleContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#block_middle.
+    def exitBlock_middle(self, ctx:LangParser.Block_middleContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#exp_block.
+    def enterExp_block(self, ctx:LangParser.Exp_blockContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#exp_block.
+    def exitExp_block(self, ctx:LangParser.Exp_blockContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#if_param.
+    def enterIf_param(self, ctx:LangParser.If_paramContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#if_param.
+    def exitIf_param(self, ctx:LangParser.If_paramContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#if.
+    def enterIf(self, ctx:LangParser.IfContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#if.
+    def exitIf(self, ctx:LangParser.IfContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#elif.
+    def enterElif(self, ctx:LangParser.ElifContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#elif.
+    def exitElif(self, ctx:LangParser.ElifContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#else.
+    def enterElse(self, ctx:LangParser.ElseContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#else.
+    def exitElse(self, ctx:LangParser.ElseContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#if_statement.
+    def enterIf_statement(self, ctx:LangParser.If_statementContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#if_statement.
+    def exitIf_statement(self, ctx:LangParser.If_statementContext):
         pass
 
 
