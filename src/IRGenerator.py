@@ -45,6 +45,8 @@ class IRGenerator(LangVisitor):
         self.builder = ir.IRBuilder(block)
 
         self.num = 0
+        self.if_else = 0
+        self.elif_num = 0
 
         self.module.triple = "arm64-apple-macosx14.0.0"
 
@@ -233,15 +235,89 @@ class IRGenerator(LangVisitor):
         return 0
 
 
-    # Visit a parse tree produced by LangParser#function.
-    def visitFunction(self, ctx:LangParser.FunctionContext):
-        return self.visitChildren(ctx)
+    def visitIf_param(self, ctx:LangParser.If_paramContext):
+        size = ctx.getChildCount()
+        if (size==2):
+            return self.visit(ctx.getChild(0))
+        elif (size==4):
+            return self.visit(ctx.getChild(1))
 
 
-    # Visit a parse tree produced by LangParser#main_func.
-    def visitMain_func(self, ctx:LangParser.Main_funcContext):
-        return self.visitChildren(ctx)
+    def visitExp_block(self, ctx:LangParser.Exp_blockContext):
+        size = ctx.getChildCount()
+        for i in range(1,size-1):
+            self.visit(ctx.getChild(i))
 
+
+    def visitIf(self, ctx:LangParser.IfContext):
+        num = self.if_else
+        pred = self.visit(ctx.getChild(1))[0]
+        addr = self.address_table[f"ifvar{num}"]
+        if_block = self.builder.append_basic_block(f"if_block_{num}")
+        endif_block = self.builder.append_basic_block(f"endif_block_{num}")
+        self.builder.cbranch(pred,if_block,endif_block)
+        self.builder.position_at_start(if_block)
+        self.visit(ctx.getChild(2))
+        self.builder.store(false, addr)
+        self.builder.branch(endif_block)
+        self.builder.position_at_start(endif_block)
+
+
+    def visitElif(self, ctx:LangParser.ElifContext):
+        num = f"{self.if_else}{self.elif_num}"
+        pred = self.visit(ctx.getChild(1))[0]
+        addr = self.address_table[f"ifvar{self.if_else}"]
+        elif_block = self.builder.append_basic_block(f"elif_block_{num}")
+        end_elif_block = self.builder.append_basic_block(f"end_elif_block_{num}")
+        self.builder.cbranch(pred,elif_block,end_elif_block)
+        self.builder.position_at_start(elif_block)
+        self.visit(ctx.getChild(2))
+        self.builder.store(false, addr)
+        self.builder.branch(end_elif_block)
+        self.builder.position_at_start(end_elif_block)
+        
+        self.elif_num += 1
+
+
+
+    def visitElse(self, ctx:LangParser.ElseContext):
+        num = self.if_else
+        addr = self.address_table[f"ifvar{num}"]
+        pred = self.builder.load(addr)
+        else_block = self.builder.append_basic_block(f"else_block_{num}")
+        end_else_block = self.builder.append_basic_block(f"end_else_block_{num}")
+        self.builder.cbranch(pred,else_block,end_else_block)
+        self.builder.position_at_start(else_block)
+        self.visit(ctx.getChild(2))
+        self.builder.branch(end_else_block)
+        self.builder.position_at_start(end_else_block)
+
+    
+    def visitIf_statement(self, ctx:LangParser.If_statementContext):
+        
+        var_name= f"ifvar{self.if_else}"
+        var_addr = self.builder.alloca( ir.IntType(1), name=var_name)
+        self.builder.store(true, var_addr)
+        self.address_table[var_name] = var_addr
+        size = ctx.getChildCount()
+        for i in range(size):
+            self.visit(ctx.getChild(i))
+        self.elif_num = 0
+        self.if_else += 1
+
+            
+
+        return 0
+
+    # # Visit a parse tree produced by LangParser#function.
+    # def visitFunction(self, ctx:LangParser.FunctionContext):
+    #     return self.visitChildren(ctx)
+    #
+    #
+    # # Visit a parse tree produced by LangParser#main_func.
+    # def visitMain_func(self, ctx:LangParser.Main_funcContext):
+    #     return self.visitChildren(ctx)
+    #
 
 
 
