@@ -19,8 +19,23 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#exp_block.
+    def visitExp_block(self, ctx:LangParser.Exp_blockContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#exp.
     def visitExp(self, ctx:LangParser.ExpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#exp_stmt.
+    def visitExp_stmt(self, ctx:LangParser.Exp_stmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#stmt.
+    def visitStmt(self, ctx:LangParser.StmtContext):
         return self.visitChildren(ctx)
 
 
@@ -116,6 +131,36 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#main_func.
     def visitMain_func(self, ctx:LangParser.Main_funcContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#if_param.
+    def visitIf_param(self, ctx:LangParser.If_paramContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#if.
+    def visitIf(self, ctx:LangParser.IfContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#elif.
+    def visitElif(self, ctx:LangParser.ElifContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#else.
+    def visitElse(self, ctx:LangParser.ElseContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#if_statement.
+    def visitIf_statement(self, ctx:LangParser.If_statementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#newl_ignore.
+    def visitNewl_ignore(self, ctx:LangParser.Newl_ignoreContext):
         return self.visitChildren(ctx)
 
 

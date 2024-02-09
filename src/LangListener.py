@@ -26,12 +26,39 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#exp_block.
+    def enterExp_block(self, ctx:LangParser.Exp_blockContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#exp_block.
+    def exitExp_block(self, ctx:LangParser.Exp_blockContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#exp.
     def enterExp(self, ctx:LangParser.ExpContext):
         pass
 
     # Exit a parse tree produced by LangParser#exp.
     def exitExp(self, ctx:LangParser.ExpContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#exp_stmt.
+    def enterExp_stmt(self, ctx:LangParser.Exp_stmtContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#exp_stmt.
+    def exitExp_stmt(self, ctx:LangParser.Exp_stmtContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#stmt.
+    def enterStmt(self, ctx:LangParser.StmtContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#stmt.
+    def exitStmt(self, ctx:LangParser.StmtContext):
         pass
 
 
@@ -203,6 +230,60 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#main_func.
     def exitMain_func(self, ctx:LangParser.Main_funcContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#if_param.
+    def enterIf_param(self, ctx:LangParser.If_paramContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#if_param.
+    def exitIf_param(self, ctx:LangParser.If_paramContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#if.
+    def enterIf(self, ctx:LangParser.IfContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#if.
+    def exitIf(self, ctx:LangParser.IfContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#elif.
+    def enterElif(self, ctx:LangParser.ElifContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#elif.
+    def exitElif(self, ctx:LangParser.ElifContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#else.
+    def enterElse(self, ctx:LangParser.ElseContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#else.
+    def exitElse(self, ctx:LangParser.ElseContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#if_statement.
+    def enterIf_statement(self, ctx:LangParser.If_statementContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#if_statement.
+    def exitIf_statement(self, ctx:LangParser.If_statementContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#newl_ignore.
+    def enterNewl_ignore(self, ctx:LangParser.Newl_ignoreContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#newl_ignore.
+    def exitNewl_ignore(self, ctx:LangParser.Newl_ignoreContext):
         pass
 
 

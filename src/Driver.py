@@ -14,6 +14,7 @@ def main(argv):
     if parser.getNumberOfSyntaxErrors() > 0:
         print("syntax errors")
     else:
+        print(tree.toStringTree(recog=parser))
         if len(argv) != 2: # Calling Compile.py
             irGen = IRGenerator(argv[1], argv[2])
             irGen.visit(tree)
