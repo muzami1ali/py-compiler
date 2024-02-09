@@ -45,10 +45,11 @@ class IRGenerator(LangVisitor):
         self.builder = ir.IRBuilder(block)
 
         self.num = 0
-        self.if_else = 0
-        self.elif_num = 0
+        self.if_else = -1
+        self.stack=[]
 
         self.module.triple = "arm64-apple-macosx14.0.0"
+
 
     # Visit a parse tree produced by LangParser#prog.
     def visitProg(self, ctx:LangParser.ProgContext):
@@ -250,38 +251,41 @@ class IRGenerator(LangVisitor):
 
 
     def visitIf(self, ctx:LangParser.IfContext):
-        num = self.if_else
+        size = len(self.stack)
+        num = self.stack[size-1]
         pred = self.visit(ctx.getChild(1))[0]
         addr = self.address_table[f"ifvar{num}"]
         if_block = self.builder.append_basic_block(f"if_block_{num}")
         endif_block = self.builder.append_basic_block(f"endif_block_{num}")
         self.builder.cbranch(pred,if_block,endif_block)
         self.builder.position_at_start(if_block)
-        self.visit(ctx.getChild(2))
         self.builder.store(false, addr)
+        self.visit(ctx.getChild(2))
         self.builder.branch(endif_block)
         self.builder.position_at_start(endif_block)
 
 
     def visitElif(self, ctx:LangParser.ElifContext):
-        num = f"{self.if_else}{self.elif_num}"
-        pred = self.visit(ctx.getChild(1))[0]
-        addr = self.address_table[f"ifvar{self.if_else}"]
+        size = len(self.stack)
+        num = self.stack[size-1]
+        bool_val = self.visit(ctx.getChild(1))[0]
+        addr = self.address_table[f"ifvar{num}"]
+        if_val = self.builder.load(addr)
+        pred = self.builder.and_(bool_val,if_val)
         elif_block = self.builder.append_basic_block(f"elif_block_{num}")
         end_elif_block = self.builder.append_basic_block(f"end_elif_block_{num}")
         self.builder.cbranch(pred,elif_block,end_elif_block)
         self.builder.position_at_start(elif_block)
-        self.visit(ctx.getChild(2))
         self.builder.store(false, addr)
+        self.visit(ctx.getChild(2))
         self.builder.branch(end_elif_block)
         self.builder.position_at_start(end_elif_block)
         
-        self.elif_num += 1
-
 
 
     def visitElse(self, ctx:LangParser.ElseContext):
-        num = self.if_else
+        size = len(self.stack)
+        num = self.stack[size-1]
         addr = self.address_table[f"ifvar{num}"]
         pred = self.builder.load(addr)
         else_block = self.builder.append_basic_block(f"else_block_{num}")
@@ -295,6 +299,8 @@ class IRGenerator(LangVisitor):
     
     def visitIf_statement(self, ctx:LangParser.If_statementContext):
         
+        self.if_else += 1
+        self.stack.append(self.if_else)
         var_name= f"ifvar{self.if_else}"
         var_addr = self.builder.alloca( ir.IntType(1), name=var_name)
         self.builder.store(true, var_addr)
@@ -302,10 +308,8 @@ class IRGenerator(LangVisitor):
         size = ctx.getChildCount()
         for i in range(size):
             self.visit(ctx.getChild(i))
-        self.elif_num = 0
-        self.if_else += 1
+        self.stack.pop()
 
-            
 
         return 0
 
