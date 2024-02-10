@@ -47,6 +47,8 @@ class IRGenerator(LangVisitor):
         self.num = 0
         self.if_else = -1
         self.stack=[]
+        
+        self.while_stmt = 0
 
         self.module.triple = "arm64-apple-macosx14.0.0"
 
@@ -162,7 +164,7 @@ class IRGenerator(LangVisitor):
          
 
     def visitParam(self, ctx:LangParser.ParamContext):
-        if(ctx.getChild(0).getRuleIndex()==4): #Var rule index is 4
+        if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
             param = (self.visit(ctx.getChild(0)))[0]
             param_type = self.symbol_table[param]
             return (self.address_table[param],param_type)
@@ -229,10 +231,21 @@ class IRGenerator(LangVisitor):
         var_name = var_info[0]
         var_val = var_info[1]
         var_type = var_info[2]
-        var_addr = self.builder.alloca(checkType(var_type), name=var_name)
-        self.builder.store(var_val, var_addr)
-        self.address_table[var_name] = var_addr
-        self.symbol_table[var_name] = var_type
+        try: 
+            var_old_typ = self.symbol_table[var_name]
+            if (var_old_typ==var_type):
+                var_addr = self.address_table[var_name]
+                self.builder.store(var_val, var_addr)
+            else: 
+                var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+                self.builder.store(var_val, var_addr)
+                self.address_table[var_name] = var_addr
+                self.symbol_table[var_name] = var_type
+        except KeyError:
+            var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+            self.builder.store(var_val, var_addr)
+            self.address_table[var_name] = var_addr
+            self.symbol_table[var_name] = var_type
         return 0
 
 
@@ -246,6 +259,7 @@ class IRGenerator(LangVisitor):
 
     def visitExp_block(self, ctx:LangParser.Exp_blockContext):
         size = ctx.getChildCount()
+        print(size)
         for i in range(1,size-1):
             self.visit(ctx.getChild(i))
 
@@ -310,6 +324,21 @@ class IRGenerator(LangVisitor):
             self.visit(ctx.getChild(i))
         self.stack.pop()
 
+
+        return 0
+
+
+    def visitWhile_statement(self, ctx:LangParser.While_statementContext):
+        num = self.while_stmt
+        pred = self.visit(ctx.getChild(1))[0]
+        while_block = self.builder.append_basic_block(f"while_block_{num}")
+        end_while_block = self.builder.append_basic_block(f"end_while_block_{num}")
+        self.builder.cbranch(pred,while_block,end_while_block)
+        self.builder.position_at_start(while_block)
+        self.visit(ctx.getChild(2))
+        pred = self.visit(ctx.getChild(1))[0]
+        self.builder.cbranch(pred,while_block,end_while_block)
+        self.builder.position_at_start(end_while_block)
 
         return 0
 

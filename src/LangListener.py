@@ -98,6 +98,24 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#break.
+    def enterBreak(self, ctx:LangParser.BreakContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#break.
+    def exitBreak(self, ctx:LangParser.BreakContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#continue.
+    def enterContinue(self, ctx:LangParser.ContinueContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#continue.
+    def exitContinue(self, ctx:LangParser.ContinueContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#a_op.
     def enterA_op(self, ctx:LangParser.A_opContext):
         pass
@@ -275,6 +293,15 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#if_statement.
     def exitIf_statement(self, ctx:LangParser.If_statementContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#while_statement.
+    def enterWhile_statement(self, ctx:LangParser.While_statementContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#while_statement.
+    def exitWhile_statement(self, ctx:LangParser.While_statementContext):
         pass
 
 

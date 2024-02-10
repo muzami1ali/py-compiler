@@ -59,6 +59,16 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#break.
+    def visitBreak(self, ctx:LangParser.BreakContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#continue.
+    def visitContinue(self, ctx:LangParser.ContinueContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#a_op.
     def visitA_op(self, ctx:LangParser.A_opContext):
         return self.visitChildren(ctx)
@@ -156,6 +166,11 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#if_statement.
     def visitIf_statement(self, ctx:LangParser.If_statementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#while_statement.
+    def visitWhile_statement(self, ctx:LangParser.While_statementContext):
         return self.visitChildren(ctx)
 
 
