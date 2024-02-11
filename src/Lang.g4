@@ -123,7 +123,7 @@ elif: 'elif' if_param exp_block;
 else: 'else' ':' exp_block;
 if_statement: if elif* else?;
 
-while_statement: 'while' if_param exp_block;
+while_statement: 'while' if_param exp_block  ('else' ':' exp_block)?;
 
 newl_ignore : (NEWLINE)*;
 

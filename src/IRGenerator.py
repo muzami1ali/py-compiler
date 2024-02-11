@@ -329,16 +329,26 @@ class IRGenerator(LangVisitor):
 
 
     def visitWhile_statement(self, ctx:LangParser.While_statementContext):
+        size = ctx.getChildCount()
         num = self.while_stmt
         pred = self.visit(ctx.getChild(1))[0]
         while_block = self.builder.append_basic_block(f"while_block_{num}")
         end_while_block = self.builder.append_basic_block(f"end_while_block_{num}")
+        if (size > 3):
+            while_else_block = self.builder.append_basic_block(f"while_else_block_{num}")
+            end_while_else_block = self.builder.append_basic_block(f"end_while_else_block_{num}")
         self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(while_block)
         self.visit(ctx.getChild(2))
         pred = self.visit(ctx.getChild(1))[0]
         self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(end_while_block)
+        if(size > 3):
+            self.builder.branch(while_else_block)
+            self.builder.position_at_start(while_else_block)
+            self.visit(ctx.getChild(5))
+            self.builder.branch(end_while_else_block)
+            self.builder.position_at_start(end_while_else_block)
 
         return 0
 
