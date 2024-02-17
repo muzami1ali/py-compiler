@@ -72,6 +72,8 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#prog.
     def visitProg(self, ctx:LangParser.ProgContext):
+        # print('yolo')
+        # print((ctx.getChild(1)).getChild(0))
         self.visit(ctx.getChild(1))
         prev_block = self.builder.block
         self.builder.position_at_end(self.var_block)
@@ -267,9 +269,9 @@ class IRGenerator(LangVisitor):
 
         try:
             # Re-assigning variables
+            self.builder.position_at_end(prev_block)
             var_addr = self.address_table[(var_name, var_type)]
             self.builder.store(var_val, var_addr)
-            self.builder.position_at_end(prev_block)
 
         except KeyError:
             if(exists == 0):
@@ -293,23 +295,6 @@ class IRGenerator(LangVisitor):
                 self.builder.position_at_end(prev_block)
                 self.builder.store(typ_var_val,typ_var_addr)
 
-
-        # try: 
-        #     var_old_typ = self.symbol_table[var_name]
-        #     if (var_old_typ==var_type):
-        #         var_addr = self.address_table[var_name]
-        #         self.builder.store(var_val, var_addr)
-        #     else: 
-        #         self.type_change += 1
-        #         var_addr = self.builder.alloca(checkType(var_type), name=var_name)
-        #         self.builder.store(var_val, var_addr)
-        #         self.address_table[var_name] = var_addr
-        #         self.symbol_table[var_name] = var_type
-        # except KeyError:
-        #     var_addr = self.builder.alloca(checkType(var_type), name=var_name)
-        #     self.builder.store(var_val, var_addr)
-        #     self.address_table[var_name] = var_addr
-        #     self.symbol_table[var_name] = var_type
         return 0
 
 

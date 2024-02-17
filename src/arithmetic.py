@@ -90,20 +90,57 @@ def double_op(op,lhs,rhs,builder):
         case "**":
             return (pow(builder,lhs,rhs), "DoubleVal")
 
-
-def aop(op,lhs,rhs,builder,symT,addrT):
+typ_lst = ["IntVar", "FloatVar", "DoubleVar"]
+def arith_op(op,lhs,rhs,builder,symT,addrT):
     lhs_val = lhs[0]
     lhs_typ = lhs[1]
-    if lhs_typ == "Var":
-        lhs_typ = re.sub("Var", "Val", symT[lhs_val])
-        addr = addrT[lhs_val]
-        lhs_val = builder.load(addr)
     rhs_val = rhs[0]
     rhs_typ = rhs[1]
+    # if (lhs_typ == "Var" and rhs_typ == "Var"):
+    #     pass
+    if lhs_typ == "Var":
+        var = lhs_val
+        size = len(typ_lst)
+        typ_var = f"{var}-type"
+        for i in range(size):
+            typ = typ_lst[i]
+            try:
+                var_addr = address_table[(var,typ)]
+                # typ_var_addr = address_table[(typ_var,"TypeVar")]
+                #  check_typ_block = builder.append_basic_block(name=f"aop_typ_block_{var}_{typ}")
+                # end_check_typ_block = builder.append_basic_block(name=f"end_aop_typ_block_{var}_{typ}")
+                # typ_var_val = builder.load(typ_var_addr)
+                # comp = ir.Constant(ir.IntType(2), i)
+                # pred = builder.icmp_unsigned("==",comp,typ_var_val)
+                # builder.cbranch(pred,check_typ_block,end_check_typ_block)
+                # builder.position_at_start(check_typ_block)
+                lhs_typ = re.sub("Var", "Val", typ)
+                addr = var_addr
+                lhs_val = builder.load(addr)
+                # builder.branch(end_check_typ_block)
+                # builder.position_at_start(end_check_typ_block)
+            except KeyError:
+                pass
     if rhs_typ == "Var":
         rhs_typ = re.sub("Var", "Val", symT[rhs_val])
         addr = addrT[rhs_val]
         rhs_val = builder.load(addr)
+
+
+
+def aop(op,lhs,rhs,builder,symT,addrT):
+    # lhs_val = lhs[0]
+    # lhs_typ = lhs[1]
+    # if lhs_typ == "Var":
+    #     lhs_typ = re.sub("Var", "Val", symT[lhs_val])
+    #     addr = addrT[lhs_val]
+    #     lhs_val = builder.load(addr)
+    # rhs_val = rhs[0]
+    # rhs_typ = rhs[1]
+    # if rhs_typ == "Var":
+    #     rhs_typ = re.sub("Var", "Val", symT[rhs_val])
+    #     addr = addrT[rhs_val]
+    #     rhs_val = builder.load(addr)
 
     if rhs_typ == lhs_typ:
         if lhs_typ == "IntVal":
