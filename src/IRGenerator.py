@@ -23,6 +23,15 @@ def checkType(ty):
         case "BoolVar":
             return ir.IntType(1)
 
+def getVarVal(var, addrT, builder):
+    var_val = var[0]
+    var_type = var[1] 
+    if var_type == "Var":
+        addr = addrT[var_val]
+        return builder.load(addr)
+    return var_val
+
+
 class IRGenerator(LangVisitor):
     def __init__(self, fileName, filePath):
         self.dir = filePath
@@ -237,10 +246,11 @@ class IRGenerator(LangVisitor):
                 var_addr = self.address_table[var_name]
                 self.builder.store(var_val, var_addr)
             else: 
-                var_addr = self.builder.alloca(checkType(var_type), name=var_name)
-                self.builder.store(var_val, var_addr)
-                self.address_table[var_name] = var_addr
-                self.symbol_table[var_name] = var_type
+                raise Exception(f"{var_name} changed from {var_old_typ} to {var_type}")
+                # var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+                # self.builder.store(var_val, var_addr)
+                # self.address_table[var_name] = var_addr
+                # self.symbol_table[var_name] = var_type
         except KeyError:
             var_addr = self.builder.alloca(checkType(var_type), name=var_name)
             self.builder.store(var_val, var_addr)
@@ -267,7 +277,8 @@ class IRGenerator(LangVisitor):
     def visitIf(self, ctx:LangParser.IfContext):
         size = len(self.stack)
         num = self.stack[size-1]
-        pred = self.visit(ctx.getChild(1))[0]
+        # pred = self.visit(ctx.getChild(1))[0]
+        pred = getVarVal(self.visit(ctx.getChild(1)), self.address_table, self.builder)
         addr = self.address_table[f"ifvar{num}"]
         if_block = self.builder.append_basic_block(f"if_block_{num}")
         endif_block = self.builder.append_basic_block(f"endif_block_{num}")
@@ -282,7 +293,7 @@ class IRGenerator(LangVisitor):
     def visitElif(self, ctx:LangParser.ElifContext):
         size = len(self.stack)
         num = self.stack[size-1]
-        bool_val = self.visit(ctx.getChild(1))[0]
+        bool_val = getVarVal(self.visit(ctx.getChild(1)), self.address_table, self.builder)
         addr = self.address_table[f"ifvar{num}"]
         if_val = self.builder.load(addr)
         pred = self.builder.and_(bool_val,if_val)
