@@ -26,13 +26,15 @@ def nextToken(self):
     return self.denter.next_token()
 
 }
+KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not' 
+    | 'while' | 'continue' | 'break'
+    ;
 COMMENT: '#' ~[\r\n]* -> skip;
 BOOL: 'True' | 'False';
 ID: [a-zA-Z_] [a-zA-Z0-9_]*;
 HID: '__' ID '__';
 INT: [0-9]+ ;
 FLOAT: [0-9]+ '.' [0-9]+ ;
-KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not' ;
 SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':' 
    | '_' | '.' | '%' | '|' 
     ;
@@ -54,7 +56,7 @@ prog : newl_ignore file newl_ignore EOF;
 file :  exp*;
 
 exp_block:  INDENT exp+ DEDENT ;
-exp : exp_stmt | stmt | if_statement;
+exp : exp_stmt | stmt | if_statement | while_statement;
 exp_stmt: stmt NEWLINE;
 stmt: var_decl | a_op | b_op | func_call;
 
@@ -62,6 +64,8 @@ var : ID;
 int : INT;
 float : FLOAT;
 bool : BOOL;
+break: 'break';
+continue: 'continue';
 
 a_op: a_op '-' aop3
     | a_op '+' aop3
@@ -119,7 +123,7 @@ elif: 'elif' if_param exp_block;
 else: 'else' ':' exp_block;
 if_statement: if elif* else?;
 
-
+while_statement: 'while' if_param exp_block  ('else' ':' exp_block)?;
 
 newl_ignore : (NEWLINE)*;
 

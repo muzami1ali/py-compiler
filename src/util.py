@@ -75,7 +75,6 @@ def print_func(builder, num, func_param):
     elif typ=="BoolVar":
         res = builder.load(i[0])
         print_bool(builder, res)
-        # return num
     elif typ=="IntVal":
         printf(builder, "%d\n", num, i[0])
     elif typ=="FloatVal":
@@ -85,8 +84,6 @@ def print_func(builder, num, func_param):
         printf(builder, "%f\n", num, i[0])
     elif typ=="BoolVal":
         print_bool(builder, i[0])
-        # return num
-    # return (num + 1)
 
 
 def printb(builder, format):

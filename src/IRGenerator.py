@@ -23,6 +23,15 @@ def checkType(ty):
         case "BoolVar":
             return ir.IntType(1)
 
+def getVarVal(var, addrT, builder):
+    var_val = var[0]
+    var_type = var[1] 
+    if var_type == "Var":
+        addr = addrT[var_val]
+        return builder.load(addr)
+    return var_val
+
+
 class IRGenerator(LangVisitor):
     def __init__(self, fileName, filePath):
         self.dir = filePath
@@ -47,6 +56,8 @@ class IRGenerator(LangVisitor):
         self.num = 0
         self.if_else = -1
         self.stack=[]
+        
+        self.while_stmt = 0
 
         self.module.triple = "arm64-apple-macosx14.0.0"
 
@@ -162,7 +173,7 @@ class IRGenerator(LangVisitor):
          
 
     def visitParam(self, ctx:LangParser.ParamContext):
-        if(ctx.getChild(0).getRuleIndex()==4): #Var rule index is 4
+        if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
             param = (self.visit(ctx.getChild(0)))[0]
             param_type = self.symbol_table[param]
             return (self.address_table[param],param_type)
@@ -229,10 +240,22 @@ class IRGenerator(LangVisitor):
         var_name = var_info[0]
         var_val = var_info[1]
         var_type = var_info[2]
-        var_addr = self.builder.alloca(checkType(var_type), name=var_name)
-        self.builder.store(var_val, var_addr)
-        self.address_table[var_name] = var_addr
-        self.symbol_table[var_name] = var_type
+        try: 
+            var_old_typ = self.symbol_table[var_name]
+            if (var_old_typ==var_type):
+                var_addr = self.address_table[var_name]
+                self.builder.store(var_val, var_addr)
+            else: 
+                raise Exception(f"{var_name} changed from {var_old_typ} to {var_type}")
+                # var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+                # self.builder.store(var_val, var_addr)
+                # self.address_table[var_name] = var_addr
+                # self.symbol_table[var_name] = var_type
+        except KeyError:
+            var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+            self.builder.store(var_val, var_addr)
+            self.address_table[var_name] = var_addr
+            self.symbol_table[var_name] = var_type
         return 0
 
 
@@ -246,6 +269,7 @@ class IRGenerator(LangVisitor):
 
     def visitExp_block(self, ctx:LangParser.Exp_blockContext):
         size = ctx.getChildCount()
+        print(size)
         for i in range(1,size-1):
             self.visit(ctx.getChild(i))
 
@@ -253,7 +277,8 @@ class IRGenerator(LangVisitor):
     def visitIf(self, ctx:LangParser.IfContext):
         size = len(self.stack)
         num = self.stack[size-1]
-        pred = self.visit(ctx.getChild(1))[0]
+        # pred = self.visit(ctx.getChild(1))[0]
+        pred = getVarVal(self.visit(ctx.getChild(1)), self.address_table, self.builder)
         addr = self.address_table[f"ifvar{num}"]
         if_block = self.builder.append_basic_block(f"if_block_{num}")
         endif_block = self.builder.append_basic_block(f"endif_block_{num}")
@@ -268,7 +293,7 @@ class IRGenerator(LangVisitor):
     def visitElif(self, ctx:LangParser.ElifContext):
         size = len(self.stack)
         num = self.stack[size-1]
-        bool_val = self.visit(ctx.getChild(1))[0]
+        bool_val = getVarVal(self.visit(ctx.getChild(1)), self.address_table, self.builder)
         addr = self.address_table[f"ifvar{num}"]
         if_val = self.builder.load(addr)
         pred = self.builder.and_(bool_val,if_val)
@@ -310,6 +335,31 @@ class IRGenerator(LangVisitor):
             self.visit(ctx.getChild(i))
         self.stack.pop()
 
+
+        return 0
+
+
+    def visitWhile_statement(self, ctx:LangParser.While_statementContext):
+        size = ctx.getChildCount()
+        num = self.while_stmt
+        pred = self.visit(ctx.getChild(1))[0]
+        while_block = self.builder.append_basic_block(f"while_block_{num}")
+        end_while_block = self.builder.append_basic_block(f"end_while_block_{num}")
+        if (size > 3):
+            while_else_block = self.builder.append_basic_block(f"while_else_block_{num}")
+            end_while_else_block = self.builder.append_basic_block(f"end_while_else_block_{num}")
+        self.builder.cbranch(pred,while_block,end_while_block)
+        self.builder.position_at_start(while_block)
+        self.visit(ctx.getChild(2))
+        pred = self.visit(ctx.getChild(1))[0]
+        self.builder.cbranch(pred,while_block,end_while_block)
+        self.builder.position_at_start(end_while_block)
+        if(size > 3):
+            self.builder.branch(while_else_block)
+            self.builder.position_at_start(while_else_block)
+            self.visit(ctx.getChild(5))
+            self.builder.branch(end_while_else_block)
+            self.builder.position_at_start(end_while_else_block)
 
         return 0
 
