@@ -208,6 +208,11 @@ class IRGenerator(LangVisitor):
         aop  = self.visit(ctx.getChild(2))
         aop_val = aop[0]
         aop_typ = aop[1]
+        if aop_typ == "Var":
+            var_addr = self.address_table[aop_val]
+            typ = self.symbol_table[aop_val]
+            val = self.builder.load(var_addr)
+            return (var_name, val, typ)
         typ = re.sub("Val","Var",aop_typ)
         return (var_name,aop_val,typ)
 
@@ -230,8 +235,17 @@ class IRGenerator(LangVisitor):
     # Visit a parse tree produced by LangParser#bool_var.
     def visitBool_var(self, ctx:LangParser.Bool_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
-        val  = self.visit(ctx.getChild(2))[0]
-        return (var_name, val, "BoolVar")
+        var  = self.visit(ctx.getChild(2))
+        var_val = var[0]
+        var_typ = var[1]
+        if var_typ == "Var":
+            var_addr = self.address_table[var_val]
+            typ = self.symbol_table[var_val]
+            val = self.builder.load(var_addr)
+            return (var_name, val, typ)
+
+        # print(var)
+        return (var_name, var_val, "BoolVar")
 
 
     # Visit a parse tree produced by LangParser#var_decl.
@@ -246,7 +260,7 @@ class IRGenerator(LangVisitor):
                 var_addr = self.address_table[var_name]
                 self.builder.store(var_val, var_addr)
             else: 
-                raise Exception(f"{var_name} changed from {var_old_typ} to {var_type}")
+                raise Exception(f"{var_name} changed from {var_old_typ} to {var_type} \n Details: \n {var_info}")
                 # var_addr = self.builder.alloca(checkType(var_type), name=var_name)
                 # self.builder.store(var_val, var_addr)
                 # self.address_table[var_name] = var_addr
