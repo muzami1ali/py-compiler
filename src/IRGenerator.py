@@ -23,6 +23,17 @@ def checkType(ty):
         case "BoolVar":
             return ir.IntType(1)
 
+def setTypeVar(ty):
+    match ty:
+        case "IntVar":
+            return ir.Constant(ir.IntType(2),0)
+        case "FloatVar":
+            return ir.Constant(ir.IntType(2),1)
+        case "DoubleVar":
+            return ir.Constant(ir.IntType(2),2)
+        case "BoolVar":
+            return ir.Constant(ir.IntType(2),3)
+
 class IRGenerator(LangVisitor):
     def __init__(self, fileName, filePath):
         self.dir = filePath
@@ -34,15 +45,19 @@ class IRGenerator(LangVisitor):
         target = llvm.Target.from_default_triple()
         self.module = ir.Module(name=self.moduleName)
 
-        self.symbol_table = dict()
+        self.symbol_table = []
         self.func_table = dict()
         self.address_table = dict()
         
         # set up main function
         func_ty = ir.FunctionType(ir.IntType(32), [])
         func = ir.Function(self.module, func_ty, name="main")
-        block = func.append_basic_block(name="entry")
-        self.builder = ir.IRBuilder(block)
+        self.var_block = func.append_basic_block("var_block")
+        self.entry_block = func.append_basic_block(name="entry")
+        # self.builder = ir.IRBuilder(self.entry_block)
+        self.builder = ir.IRBuilder(self.var_block)
+        self.builder.position_at_start(self.entry_block)
+        # self.builder.branch(self.var_block)
 
         self.num = 0
         self.if_else = -1
@@ -50,13 +65,23 @@ class IRGenerator(LangVisitor):
         
         self.while_stmt = 0
 
+        self.type_change = 0
+
         self.module.triple = "arm64-apple-macosx14.0.0"
 
 
     # Visit a parse tree produced by LangParser#prog.
     def visitProg(self, ctx:LangParser.ProgContext):
         self.visit(ctx.getChild(1))
+        prev_block = self.builder.block
+        self.builder.position_at_end(self.var_block)
+        self.builder.branch(self.entry_block)
+        self.builder.position_at_end(prev_block)
         self.builder.ret(ir.Constant(ir.IntType(32), 0))
+
+        # self.builder.position_at_end(self.var_block)
+        # self.builder.branch(self.entry_block)
+        # self.builder.position_at_end(prev_block)
 
         f = open(f"{self.dir}.ll", "w")
         f.write(str(self.module))
@@ -164,13 +189,13 @@ class IRGenerator(LangVisitor):
          
 
     def visitParam(self, ctx:LangParser.ParamContext):
-        if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
-            param = (self.visit(ctx.getChild(0)))[0]
-            param_type = self.symbol_table[param]
-            return (self.address_table[param],param_type)
-
-        else:
-            return self.visit(ctx.getChild(0))
+        # if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
+        #     param = (self.visit(ctx.getChild(0)))[0]
+        #     param_type = self.symbol_table[param]
+        #     return (self.address_table[param],param_type)
+        #
+        # else:
+        return self.visit(ctx.getChild(0))
 
     # Visit a parse tree produced by LangParser#params.
     def visitParams(self, ctx:LangParser.ParamsContext):
@@ -190,7 +215,8 @@ class IRGenerator(LangVisitor):
         func_param = self.visit(ctx.getChild(1))
         if (func_name == "print"):
             # self.num = print_func(self.builder,self.num,func_param)
-            print_func(self.builder,self.num,func_param)
+            print(func_param)
+            print_func(self.builder,self.num,func_param, self.address_table)
             self.num = self.num + 1
         return 0
 
@@ -227,25 +253,63 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#var_decl.
     def visitVar_decl(self, ctx:LangParser.Var_declContext):
+        print(self.address_table)
+        prev_block = self.builder.block
+        self.builder.position_at_end(self.var_block)
         var_info = self.visit(ctx.getChild(0))
         var_name = var_info[0]
         var_val = var_info[1]
         var_type = var_info[2]
-        try: 
-            var_old_typ = self.symbol_table[var_name]
-            if (var_old_typ==var_type):
-                var_addr = self.address_table[var_name]
-                self.builder.store(var_val, var_addr)
-            else: 
+        exists = self.symbol_table.count(var_name)
+        typ_var_name = f"{var_name}-type"
+        typ_var_val = setTypeVar(var_type)
+        print(prev_block)
+
+        try:
+            # Re-assigning variables
+            var_addr = self.address_table[(var_name, var_type)]
+            self.builder.store(var_val, var_addr)
+            self.builder.position_at_end(prev_block)
+
+        except KeyError:
+            if(exists == 0):
+                # Declaring it for the first time
+                # self.builder.position_at_end(self.var_block)
                 var_addr = self.builder.alloca(checkType(var_type), name=var_name)
                 self.builder.store(var_val, var_addr)
-                self.address_table[var_name] = var_addr
-                self.symbol_table[var_name] = var_type
-        except KeyError:
-            var_addr = self.builder.alloca(checkType(var_type), name=var_name)
-            self.builder.store(var_val, var_addr)
-            self.address_table[var_name] = var_addr
-            self.symbol_table[var_name] = var_type
+                self.address_table[(var_name,var_type)] = var_addr
+                self.symbol_table.append(var_name)
+                # Set up the type var
+                typ_var_addr = self.builder.alloca(ir.IntType(2), name=typ_var_name)
+                self.builder.store(typ_var_val,typ_var_addr)
+                self.address_table[(typ_var_name, "TypeVar")] = typ_var_addr
+                self.builder.position_at_end(prev_block)
+            else: 
+                # self.builder.position_at_end(self.var_block)
+                var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+                self.builder.store(var_val, var_addr)
+                self.address_table[(var_name,var_type)] = var_addr
+                typ_var_addr = self.address_table[(typ_var_name, "TypeVar")]
+                self.builder.position_at_end(prev_block)
+                self.builder.store(typ_var_val,typ_var_addr)
+
+
+        # try: 
+        #     var_old_typ = self.symbol_table[var_name]
+        #     if (var_old_typ==var_type):
+        #         var_addr = self.address_table[var_name]
+        #         self.builder.store(var_val, var_addr)
+        #     else: 
+        #         self.type_change += 1
+        #         var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+        #         self.builder.store(var_val, var_addr)
+        #         self.address_table[var_name] = var_addr
+        #         self.symbol_table[var_name] = var_type
+        # except KeyError:
+        #     var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+        #     self.builder.store(var_val, var_addr)
+        #     self.address_table[var_name] = var_addr
+        #     self.symbol_table[var_name] = var_type
         return 0
 
 
@@ -329,6 +393,7 @@ class IRGenerator(LangVisitor):
 
 
     def visitWhile_statement(self, ctx:LangParser.While_statementContext):
+        change = self.type_change
         size = ctx.getChildCount()
         num = self.while_stmt
         pred = self.visit(ctx.getChild(1))[0]
@@ -340,9 +405,15 @@ class IRGenerator(LangVisitor):
         self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(while_block)
         self.visit(ctx.getChild(2))
+        # if(change == self.type_change):
         pred = self.visit(ctx.getChild(1))[0]
         self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(end_while_block)
+        # else:
+            # self.visit(ctx)
+            # self.builder.branch(end_while_block)
+            # self.builder.position_at_start(end_while_block)
+
         if(size > 3):
             self.builder.branch(while_else_block)
             self.builder.position_at_start(while_else_block)

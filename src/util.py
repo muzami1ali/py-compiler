@@ -59,23 +59,10 @@ def printf(builder, format, num, *args):
     return builder.call(fn, [ptr_fmt] + list(args))
 
 
-def print_func(builder, num, func_param):
+def print_func(builder, num, func_param, address_table):
     i = func_param[0]
     typ = i[1]
-    if typ=="IntVar":
-        res = builder.load(i[0])
-        printf(builder, "%d\n", num, res)
-    elif typ=="FloatVar":
-        res = builder.load(i[0])
-        res1 = builder.fpext(res, ir.DoubleType())
-        printf(builder, "%f\n", num, res1)
-    elif typ=="DoubleVar":
-        res = builder.load(i[0])
-        printf(builder, "%f\n", num, res)
-    elif typ=="BoolVar":
-        res = builder.load(i[0])
-        print_bool(builder, res)
-    elif typ=="IntVal":
+    if typ=="IntVal":
         printf(builder, "%d\n", num, i[0])
     elif typ=="FloatVal":
         res = builder.fpext(i[0], ir.DoubleType())
@@ -84,6 +71,44 @@ def print_func(builder, num, func_param):
         printf(builder, "%f\n", num, i[0])
     elif typ=="BoolVal":
         print_bool(builder, i[0])
+    elif typ=="Var":
+        printVar(builder, num, i[0], address_table)
+        
+typ_lst = ["IntVar", "FloatVar", "DoubleVar", "BoolVar"]
+def printVar(builder, num, var, address_table):
+        size = len(typ_lst)
+        typ_var = f"{var}-type"
+        for i in range(size):
+            typ = typ_lst[i]
+            try:
+                var_addr = address_table[(var,typ)]
+                typ_var_addr = address_table[(typ_var,"TypeVar")]
+                check_typ_block = builder.append_basic_block(name=f"check_typ_block_{var}_{typ}")
+                end_check_typ_block = builder.append_basic_block(name=f"end_check_typ_block_{var}_{typ}")
+                typ_var_val = builder.load(typ_var_addr)
+                comp = ir.Constant(ir.IntType(2), i)
+                pred = builder.icmp_unsigned("==",comp,typ_var_val)
+                builder.cbranch(pred,check_typ_block,end_check_typ_block)
+                builder.position_at_start(check_typ_block)
+                if typ=="IntVar":
+                    res = builder.load(var_addr)
+                    printf(builder, "%d\n", int(f"{i}{num}"), res)
+                elif typ=="FloatVar":
+                    res = builder.load(var_addr)
+                    res1 = builder.fpext(res, ir.DoubleType())
+                    printf(builder, "%f\n",  int(f"{i}{num}"), res1)
+                elif typ=="DoubleVar":
+                    res = builder.load(var_addr)
+                    printf(builder, "%f\n",  int(f"{i}{num}"), res)
+                elif typ=="BoolVar":
+                    res = builder.load(var_addr)
+                    print_bool(builder, res)
+                builder.branch(end_check_typ_block)
+                builder.position_at_start(end_check_typ_block)
+            except KeyError:
+                pass
+
+                
 
 
 def printb(builder, format):
