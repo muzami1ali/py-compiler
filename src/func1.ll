@@ -11,6 +11,12 @@ entry:
   %".4" = fpext float %".3" to double
   %".5" = bitcast [4 x i8]* @"printf_format_0" to i8*
   %".6" = call i32 (i8*, ...) @"printf"(i8* %".5", double %".4")
+  %".7" = sitofp i32 2 to float
+  %".8" = fpext float 0x4034800000000000 to double
+  %".9" = fpext float %".7" to double
+  %".10" = call double @"pow"(double %".8", double %".9")
+  %".11" = bitcast [4 x i8]* @"printf_format_1" to i8*
+  %".12" = call i32 (i8*, ...) @"printf"(i8* %".11", double %".10")
   call void @"test"()
   ret i32 0
 }
@@ -18,6 +24,9 @@ entry:
 @"printf_format_0" = internal constant [4 x i8] c"%f\0a\00"
 declare i32 @"printf"(i8* %".1", ...)
 
+declare double @"pow"(double %".1", double %".2")
+
+@"printf_format_1" = internal constant [4 x i8] c"%f\0a\00"
 define void @"test"()
 {
 entry:
@@ -28,7 +37,7 @@ entry:
   br i1 %".4", label %"while_block_0", label %"end_while_block_0"
 while_block_0:
   %".6" = load i32, i32* %"i"
-  %".7" = bitcast [4 x i8]* @"printf_format_1" to i8*
+  %".7" = bitcast [4 x i8]* @"printf_format_2" to i8*
   %".8" = call i32 (i8*, ...) @"printf"(i8* %".7", i32 %".6")
   %".9" = load i32, i32* %"i"
   %".10" = add i32 %".9", 1
@@ -41,7 +50,7 @@ end_while_block_0:
   ret void
 }
 
-@"printf_format_1" = internal constant [4 x i8] c"%d\0a\00"
+@"printf_format_2" = internal constant [4 x i8] c"%d\0a\00"
 define i32 @"print_bool"(i1 %".1")
 {
 entry:

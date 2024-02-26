@@ -173,13 +173,17 @@ class IRGenerator(LangVisitor):
          
 
     def visitParam(self, ctx:LangParser.ParamContext):
-        if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
-            param = (self.visit(ctx.getChild(0)))[0]
-            param_type = self.symbol_table[param]
-            return (self.address_table[param],param_type)
+        child = self.visit(ctx.getChild(0))
+        if child[1] == "Var":
+        # if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
+            param = child[0]
+            param_type = re.sub("Var", "Val", self.symbol_table[param])
+            param_address = self.address_table[param]
+            param_value = self.builder.load(param_address)
 
+            return (param_value,param_type)
         else:
-            return self.visit(ctx.getChild(0))
+            return child
 
     # Visit a parse tree produced by LangParser#params.
     def visitParams(self, ctx:LangParser.ParamsContext):
@@ -199,7 +203,8 @@ class IRGenerator(LangVisitor):
         func_param = self.visit(ctx.getChild(1))
         if (func_name == "print"):
             # self.num = print_func(self.builder,self.num,func_param)
-            print_func(self.builder,self.num,func_param, self.symbol_table, self.address_table)
+            # print_func(self.builder,self.num,func_param, self.symbol_table, self.address_table)
+            print_func(self.builder,self.num,func_param[0])
             self.num = self.num + 1
         else:
             func = self.func_table[func_name]
