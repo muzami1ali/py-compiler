@@ -11,11 +11,11 @@ count = 0
 # check if the number of terms is valid
 if nterms <= 0:
    print(37707)
-# # if there is only one term, return n1
+# if there is only one term, return n1
 elif nterms == 1:
    print(37707)
    print(n1)
-# # generate fibonacci sequence
+# generate fibonacci sequence
 else:
    while count < nterms:
        print(n1)
