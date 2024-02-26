@@ -23,13 +23,33 @@ def checkType(ty):
         case "BoolVar":
             return ir.IntType(1)
 
-def getVarVal(var, addrT, builder):
+def getVarVal(var, symT, addrT, builder):
     var_val = var[0]
     var_type = var[1] 
     if var_type == "Var":
-        addr = addrT[var_val]
-        return builder.load(addr)
+        var_typ = symT[var_val]
+        param  = len(re.findall("Arg",var_typ))
+        if param:
+            return addrT[var]
+        else:
+            addr = addrT[var_val]
+            return builder.load(addr)
     return var_val
+
+
+def getVar(var, typ, symT, addrT, builder):
+    if typ == "Var":
+        var_typ = symT[var]
+        param  = len(re.findall("Arg",var_typ))
+        if param:
+            typ = re.sub("Arg", "Val", var_typ)
+            var = addrT[var]
+        else:
+            typ = re.sub("Var", "Val", var_typ)
+            addr = addrT[var]
+            var = builder.load(addr)
+    return (var,typ)
+
 
 
 class IRGenerator(LangVisitor):
@@ -45,6 +65,7 @@ class IRGenerator(LangVisitor):
 
         self.symbol_table = dict()
         self.func_table = dict()
+        self.args_table = dict()
         self.address_table = dict()
         
         # set up main function
@@ -195,7 +216,7 @@ class IRGenerator(LangVisitor):
         arg_name = arg[0]
         typ = self.visit(ctx.getChild(2))
         self.symbol_table[arg_name] = typ[0]
-        return (arg_name, typ[1])
+        return (arg_name, typ[0], typ[1])
 
 
     # Visit a parse tree produced by LangParser#args.
@@ -206,11 +227,13 @@ class IRGenerator(LangVisitor):
         else:
             names = []
             typs = []
+            irtyps = []
             for i in range(1,size,2):
                 arg = self.visit(ctx.getChild(i))
                 names.append(arg[0])
                 typs.append(arg[1])
-                return (names, typs)
+                irtyps.append(arg[2])
+                return (names, typs, irtyps)
 
 
 
@@ -219,11 +242,17 @@ class IRGenerator(LangVisitor):
         if child[1] == "Var":
         # if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
             param = child[0]
-            param_type = re.sub("Var", "Val", self.symbol_table[param])
-            param_address = self.address_table[param]
-            param_value = self.builder.load(param_address)
-
-            return (param_value,param_type)
+            typ = self.symbol_table[param]
+            arg =  len(re.findall("Arg",typ)) 
+            if arg:
+                param_type = re.sub("Arg", "Val", typ)
+                param_value = self.address_table[param]
+                return (param_value,param_type)
+            else:
+                param_type = re.sub("Var", "Val", typ)
+                param_address = self.address_table[param]
+                param_value = self.builder.load(param_address)
+                return (param_value,param_type)
         else:
             return child
 
@@ -233,38 +262,51 @@ class IRGenerator(LangVisitor):
         if size == 2:
             return []
         else:
-            lst = []
+            vals = []
+            typs = []
             for i in range(1,size,2):
-                lst.append(self.visit(ctx.getChild(i)))
-                return lst
+                arg = self.visit(ctx.getChild(i))
+                vals.append(arg[0])
+                typs.append(arg[1])
+            return (vals,typs)
 
 
     # Visit a parse tree produced by LangParser#func_call.
     def visitFunc_call(self, ctx:LangParser.Func_callContext):
         func_name  = self.visit(ctx.getChild(0))[0]
-        func_param = self.visit(ctx.getChild(1))
+        vals, typs = self.visit(ctx.getChild(1))
         if (func_name == "print"):
             # self.num = print_func(self.builder,self.num,func_param)
             # print_func(self.builder,self.num,func_param, self.symbol_table, self.address_table)
-            print_func(self.builder,self.num,func_param[0])
+            print_func(self.builder,self.num,(vals[0],typs[0]))
             self.num = self.num + 1
         else:
-            func = self.func_table[func_name]
-            self.builder.call(func,func_param)
+            try:
+                """
+                    Need to add error handling in parameters
+                    Scoping 
+                """
+                func = self.func_table[func_name]
+                arg_typs = self.args_table[func_name]
+                # print(func_param)
+                self.builder.call(func,vals)
+            except KeyError:
+                raise Exception(f"{func_name} has not been declared")
         return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         aop  = self.visit(ctx.getChild(2))
-        aop_val = aop[0]
-        aop_typ = aop[1]
-        if aop_typ == "Var":
-            var_addr = self.address_table[aop_val]
-            typ = self.symbol_table[aop_val]
-            val = self.builder.load(var_addr)
-            return (var_name, val, typ)
+        # aop_val = aop[0]
+        # aop_typ = aop[1]
+        aop_val, aop_typ = getVar(aop[0],aop[1],self.symbol_table,self.address_table,self.builder)
+        # if aop_typ == "Var":
+        #     var_addr = self.address_table[aop_val]
+        #     typ = self.symbol_table[aop_val]
+        #     val = self.builder.load(var_addr)
+        #     return (var_name, val, typ)
         typ = re.sub("Val","Var",aop_typ)
-        return (var_name,aop_val,typ)
+        return (var_name,aop_val, typ)
 
 
 
@@ -286,16 +328,18 @@ class IRGenerator(LangVisitor):
     def visitBool_var(self, ctx:LangParser.Bool_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         var  = self.visit(ctx.getChild(2))
-        var_val = var[0]
-        var_typ = var[1]
-        if var_typ == "Var":
-            var_addr = self.address_table[var_val]
-            typ = self.symbol_table[var_val]
-            val = self.builder.load(var_addr)
-            return (var_name, val, typ)
+        var_val, var_typ = getVar(var[0],var[1],self.symbol_table,self.address_table,self.builder)
+        # var_val = var[0]
+        # var_typ = var[1]
+        # if var_typ == "Var":
+        #     var_addr = self.address_table[var_val]
+        #     typ = self.symbol_table[var_val]
+        #     val = self.builder.load(var_addr)
+        #     return (var_name, val, typ)
 
         # print(var)
-        return (var_name, var_val, "BoolVar")
+        typ = re.sub("Val","Var",var_typ)
+        return (var_name, var_val, typ)
 
 
     # Visit a parse tree produced by LangParser#var_decl.
@@ -342,7 +386,7 @@ class IRGenerator(LangVisitor):
         size = len(self.stack)
         num = self.stack[size-1]
         # pred = self.visit(ctx.getChild(1))[0]
-        pred = getVarVal(self.visit(ctx.getChild(1)), self.address_table, self.builder)
+        pred = getVarVal(self.visit(ctx.getChild(1)), self.symbol_table, self.address_table, self.builder)
         addr = self.address_table[f"ifvar{num}"]
         if_block = self.builder.append_basic_block(f"if_block_{num}")
         endif_block = self.builder.append_basic_block(f"endif_block_{num}")
@@ -357,7 +401,7 @@ class IRGenerator(LangVisitor):
     def visitElif(self, ctx:LangParser.ElifContext):
         size = len(self.stack)
         num = self.stack[size-1]
-        bool_val = getVarVal(self.visit(ctx.getChild(1)), self.address_table, self.builder)
+        bool_val = getVarVal(self.visit(ctx.getChild(1)), self.symbol_table, self.address_table, self.builder)
         addr = self.address_table[f"ifvar{num}"]
         if_val = self.builder.load(addr)
         pred = self.builder.and_(bool_val,if_val)
@@ -406,7 +450,8 @@ class IRGenerator(LangVisitor):
     def visitWhile_statement(self, ctx:LangParser.While_statementContext):
         size = ctx.getChildCount()
         num = self.while_stmt
-        pred = self.visit(ctx.getChild(1))[0]
+        pred = getVarVal(self.visit(ctx.getChild(1)), self.symbol_table, self.address_table, self.builder)
+        # pred = self.visit(ctx.getChild(1))[0]
         while_block = self.builder.append_basic_block(f"while_block_{num}")
         end_while_block = self.builder.append_basic_block(f"end_while_block_{num}")
         if (size > 3):
@@ -415,7 +460,8 @@ class IRGenerator(LangVisitor):
         self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(while_block)
         self.visit(ctx.getChild(2))
-        pred = self.visit(ctx.getChild(1))[0]
+        pred = getVarVal(self.visit(ctx.getChild(1)), self.symbol_table, self.address_table, self.builder)
+        # pred = self.visit(ctx.getChild(1))[0]
         self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(end_while_block)
         if(size > 3):
@@ -434,7 +480,7 @@ class IRGenerator(LangVisitor):
         # old_symbol_table = self.symbol_table
         # old_address_table = self.address_table
         func_name = self.visit(ctx.getChild(1))[0]
-        names, args = self.visit(ctx.getChild(2))
+        names, typs, args = self.visit(ctx.getChild(2))
         return_type = self.visit(ctx.getChild(4))
         # print(func_name)
         # print(return_type)
@@ -449,6 +495,7 @@ class IRGenerator(LangVisitor):
         # func.args = args
         print(args)
         self.func_table[func_name] = func
+        self.args_table[func_name] = typs
         block = func.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(block)
         # visit body

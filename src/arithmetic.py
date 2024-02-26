@@ -92,9 +92,15 @@ def double_op(op,lhs,rhs,builder):
 
 def getVarVal(var, typ, symT, addrT, builder):
     if typ == "Var":
-        typ = re.sub("Var", "Val", symT[var])
-        addr = addrT[var]
-        var = builder.load(addr)
+        var_typ = symT[var]
+        param  = len(re.findall("Arg",var_typ))
+        if param:
+            typ = re.sub("Arg", "Val", var_typ)
+            var = addrT[var]
+        else:
+            typ = re.sub("Var", "Val", var_typ)
+            addr = addrT[var]
+            var = builder.load(addr)
     return (var,typ)
 
 def aop(op,lhs,rhs,builder,symT,addrT):
