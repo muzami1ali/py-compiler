@@ -27,7 +27,7 @@ def nextToken(self):
 
 }
 KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not' 
-    | 'while' | 'continue' | 'break'
+    | 'while' | 'continue' | 'break' | 'int' | 'float' | 'bool' | 'None'
     ;
 COMMENT: '#' ~[\r\n]* -> skip;
 BOOL: 'True' | 'False';
@@ -53,12 +53,13 @@ LINE_ESCAPE: '\\' '\r'? '\n' -> skip ;
 
 // parser rules
 prog : newl_ignore file newl_ignore EOF;
-file :  exp*;
+file :  (exp | function)*;
 
+function: 'def' var params '->' 'None' ':' exp_block ;
 exp_block:  INDENT exp+ DEDENT ;
 exp : exp_stmt | stmt | if_statement | while_statement;
 exp_stmt: stmt NEWLINE;
-stmt: var_decl | a_op | b_op | func_call;
+stmt: func_call | var_decl | a_op | b_op;
 
 var : ID;
 int : INT;
@@ -111,7 +112,6 @@ bool_var : var '=' b_op;
 
 var_decl : int_var | float_var | bool_var | aop_var;
 
-function: 'def' var params ':' exp+ ;
 
 main_func: 'if __name__ == "__main__" :' exp+;
 

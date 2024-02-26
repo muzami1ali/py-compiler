@@ -19,6 +19,11 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#function.
+    def visitFunction(self, ctx:LangParser.FunctionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#exp_block.
     def visitExp_block(self, ctx:LangParser.Exp_blockContext):
         return self.visitChildren(ctx)
@@ -131,11 +136,6 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#var_decl.
     def visitVar_decl(self, ctx:LangParser.Var_declContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#function.
-    def visitFunction(self, ctx:LangParser.FunctionContext):
         return self.visitChildren(ctx)
 
 

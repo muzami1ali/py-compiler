@@ -26,6 +26,15 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#function.
+    def enterFunction(self, ctx:LangParser.FunctionContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#function.
+    def exitFunction(self, ctx:LangParser.FunctionContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#exp_block.
     def enterExp_block(self, ctx:LangParser.Exp_blockContext):
         pass
@@ -230,15 +239,6 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#var_decl.
     def exitVar_decl(self, ctx:LangParser.Var_declContext):
-        pass
-
-
-    # Enter a parse tree produced by LangParser#function.
-    def enterFunction(self, ctx:LangParser.FunctionContext):
-        pass
-
-    # Exit a parse tree produced by LangParser#function.
-    def exitFunction(self, ctx:LangParser.FunctionContext):
         pass
 
 

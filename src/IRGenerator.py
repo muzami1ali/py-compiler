@@ -199,8 +199,11 @@ class IRGenerator(LangVisitor):
         func_param = self.visit(ctx.getChild(1))
         if (func_name == "print"):
             # self.num = print_func(self.builder,self.num,func_param)
-            print_func(self.builder,self.num,func_param)
+            print_func(self.builder,self.num,func_param, self.symbol_table, self.address_table)
             self.num = self.num + 1
+        else:
+            func = self.func_table[func_name]
+            self.builder.call(func,func_param)
         return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
@@ -283,7 +286,7 @@ class IRGenerator(LangVisitor):
 
     def visitExp_block(self, ctx:LangParser.Exp_blockContext):
         size = ctx.getChildCount()
-        print(size)
+        # print(size)
         for i in range(1,size-1):
             self.visit(ctx.getChild(i))
 
@@ -377,9 +380,24 @@ class IRGenerator(LangVisitor):
 
         return 0
 
-    # # Visit a parse tree produced by LangParser#function.
-    # def visitFunction(self, ctx:LangParser.FunctionContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by LangParser#function.
+    def visitFunction(self, ctx:LangParser.FunctionContext):
+        size = ctx.getChildCount()
+        old_builder = self.builder
+        func_name = self.visit(ctx.getChild(1))[0]
+        return_type = self.visit(ctx.getChild(4))
+        # print(func_name)
+        # print(return_type)
+        func_ty = ir.FunctionType(ir.VoidType(), [])
+        func = ir.Function(self.module, func_ty, name=func_name)
+        self.func_table[func_name] = func
+        block = func.append_basic_block(name="entry")
+        self.builder = ir.IRBuilder(block)
+        # visit body
+        self.visit(ctx.getChild(6))
+        self.builder.ret_void()
+        self.builder = old_builder
+        return 0
     #
     #
     # # Visit a parse tree produced by LangParser#main_func.

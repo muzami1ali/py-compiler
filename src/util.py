@@ -59,9 +59,14 @@ def printf(builder, format, num, *args):
     return builder.call(fn, [ptr_fmt] + list(args))
 
 
-def print_func(builder, num, func_param):
-    i = func_param[0]
+def print_func(builder, num, func_param, symT, addrT):
+    i = func_param[0] # It is a tuple
     typ = i[1]
+    if typ == "Var":
+        name = i[0]
+        typ = symT[name]
+        i = (addrT[name],typ)
+
     if typ=="IntVar":
         res = builder.load(i[0])
         printf(builder, "%d\n", num, res)
