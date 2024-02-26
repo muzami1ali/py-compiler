@@ -71,6 +71,24 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#type.
+    def enterType(self, ctx:LangParser.TypeContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#type.
+    def exitType(self, ctx:LangParser.TypeContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#ret_type.
+    def enterRet_type(self, ctx:LangParser.Ret_typeContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#ret_type.
+    def exitRet_type(self, ctx:LangParser.Ret_typeContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#var.
     def enterVar(self, ctx:LangParser.VarContext):
         pass
@@ -167,6 +185,24 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#b_op.
     def exitB_op(self, ctx:LangParser.B_opContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#arg.
+    def enterArg(self, ctx:LangParser.ArgContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#arg.
+    def exitArg(self, ctx:LangParser.ArgContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#args.
+    def enterArgs(self, ctx:LangParser.ArgsContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#args.
+    def exitArgs(self, ctx:LangParser.ArgsContext):
         pass
 
 

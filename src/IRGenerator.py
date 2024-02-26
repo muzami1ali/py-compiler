@@ -105,7 +105,7 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#float.
     def visitFloat(self, ctx:LangParser.FloatContext):
-        return (ir.Constant(ir.FloatType(), float(ctx.getText())), "FloatVal")
+        return (ir.Constant(ir.DoubleType(), float(ctx.getText())), "DoubleVal")
 
 
     # Visit a parse tree produced by LangParser#bool.
@@ -172,6 +172,48 @@ class IRGenerator(LangVisitor):
             return bop(op,lhs,rhs,self.builder, self.symbol_table,self.address_table)
          
 
+    # Visit a parse tree produced by LangParser#type.
+    def visitType(self, ctx:LangParser.TypeContext):
+        typ = ctx.getText()
+        match typ:
+            case 'int':
+                return ('IntArg', ir.IntType(32))
+            case 'float':
+                return ('DoubleArg', ir.DoubleType())
+            case 'bool':
+                return ('BoolArg', ir.IntType(1))
+
+
+    # Visit a parse tree produced by LangParser#ret_type.
+    def visitRet_type(self, ctx:LangParser.Ret_typeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#arg.
+    def visitArg(self, ctx:LangParser.ArgContext):
+        arg = self.visit(ctx.getChild(0))
+        arg_name = arg[0]
+        typ = self.visit(ctx.getChild(2))
+        self.symbol_table[arg_name] = typ[0]
+        return (arg_name, typ[1])
+
+
+    # Visit a parse tree produced by LangParser#args.
+    def visitArgs(self, ctx:LangParser.ArgsContext):
+        size = ctx.getChildCount()
+        if size == 2:
+            return ([],[])
+        else:
+            names = []
+            typs = []
+            for i in range(1,size,2):
+                arg = self.visit(ctx.getChild(i))
+                names.append(arg[0])
+                typs.append(arg[1])
+                return (names, typs)
+
+
+
     def visitParam(self, ctx:LangParser.ParamContext):
         child = self.visit(ctx.getChild(0))
         if child[1] == "Var":
@@ -237,7 +279,7 @@ class IRGenerator(LangVisitor):
     def visitFloat_var(self, ctx:LangParser.Float_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         val  = self.visit(ctx.getChild(2))[0]
-        return (var_name, val, "FloatVar")
+        return (var_name, val, "DoubleVar")
 
 
     # Visit a parse tree produced by LangParser#bool_var.
@@ -389,12 +431,23 @@ class IRGenerator(LangVisitor):
     def visitFunction(self, ctx:LangParser.FunctionContext):
         size = ctx.getChildCount()
         old_builder = self.builder
+        # old_symbol_table = self.symbol_table
+        # old_address_table = self.address_table
         func_name = self.visit(ctx.getChild(1))[0]
+        names, args = self.visit(ctx.getChild(2))
         return_type = self.visit(ctx.getChild(4))
         # print(func_name)
         # print(return_type)
-        func_ty = ir.FunctionType(ir.VoidType(), [])
+        func_ty = ir.FunctionType(ir.VoidType(), args)
         func = ir.Function(self.module, func_ty, name=func_name)
+        args = func.args
+        for i in range(len(names)):
+            name = names[i]
+            arg = args[i]
+            self.address_table[name] = arg
+            arg.name = name
+        # func.args = args
+        print(args)
         self.func_table[func_name] = func
         block = func.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(block)

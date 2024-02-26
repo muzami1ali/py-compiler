@@ -5,19 +5,15 @@ target datalayout = ""
 define i32 @"main"()
 {
 entry:
-  %"foo" = alloca float
-  store float 0x4024000000000000, float* %"foo"
-  %".3" = load float, float* %"foo"
-  %".4" = fpext float %".3" to double
-  %".5" = bitcast [4 x i8]* @"printf_format_0" to i8*
-  %".6" = call i32 (i8*, ...) @"printf"(i8* %".5", double %".4")
-  %".7" = sitofp i32 2 to float
-  %".8" = fpext float 0x4034800000000000 to double
-  %".9" = fpext float %".7" to double
-  %".10" = call double @"pow"(double %".8", double %".9")
-  %".11" = bitcast [4 x i8]* @"printf_format_1" to i8*
-  %".12" = call i32 (i8*, ...) @"printf"(i8* %".11", double %".10")
-  call void @"test"()
+  %"foo" = alloca double
+  store double 0x4024000000000000, double* %"foo"
+  %".3" = load double, double* %"foo"
+  %".4" = bitcast [4 x i8]* @"printf_format_0" to i8*
+  %".5" = call i32 (i8*, ...) @"printf"(i8* %".4", double %".3")
+  %".6" = sitofp i32 2 to double
+  %".7" = call double @"pow"(double 0x4034800000000000, double %".6")
+  %".8" = bitcast [4 x i8]* @"printf_format_1" to i8*
+  %".9" = call i32 (i8*, ...) @"printf"(i8* %".8", double %".7")
   ret i32 0
 }
 
@@ -27,26 +23,26 @@ declare i32 @"printf"(i8* %".1", ...)
 declare double @"pow"(double %".1", double %".2")
 
 @"printf_format_1" = internal constant [4 x i8] c"%f\0a\00"
-define void @"test"()
+define void @"test"(i32 %"wow")
 {
 entry:
   %"i" = alloca i32
   store i32 0, i32* %"i"
-  %".3" = load i32, i32* %"i"
-  %".4" = icmp slt i32 %".3", 10
-  br i1 %".4", label %"while_block_0", label %"end_while_block_0"
+  %".4" = load i32, i32* %"i"
+  %".5" = icmp slt i32 %".4", 10
+  br i1 %".5", label %"while_block_0", label %"end_while_block_0"
 while_block_0:
-  %".6" = load i32, i32* %"i"
-  %".7" = bitcast [4 x i8]* @"printf_format_2" to i8*
-  %".8" = call i32 (i8*, ...) @"printf"(i8* %".7", i32 %".6")
-  %".9" = load i32, i32* %"i"
-  %".10" = add i32 %".9", 1
-  store i32 %".10", i32* %"i"
-  %".12" = load i32, i32* %"i"
-  %".13" = icmp slt i32 %".12", 10
-  br i1 %".13", label %"while_block_0", label %"end_while_block_0"
+  %".7" = load i32, i32* %"i"
+  %".8" = bitcast [4 x i8]* @"printf_format_2" to i8*
+  %".9" = call i32 (i8*, ...) @"printf"(i8* %".8", i32 %".7")
+  %".10" = load i32, i32* %"i"
+  %".11" = add i32 %".10", 1
+  store i32 %".11", i32* %"i"
+  %".13" = load i32, i32* %"i"
+  %".14" = icmp slt i32 %".13", 10
+  br i1 %".14", label %"while_block_0", label %"end_while_block_0"
 end_while_block_0:
-  %".15" = call i32 @"print_bool"(i1 1)
+  %".16" = call i32 @"print_bool"(i1 1)
   ret void
 }
 

@@ -55,12 +55,14 @@ LINE_ESCAPE: '\\' '\r'? '\n' -> skip ;
 prog : newl_ignore file newl_ignore EOF;
 file :  (exp | function)*;
 
-function: 'def' var params '->' 'None' ':' exp_block ;
+function: 'def' var args '->' 'None' ':' exp_block ;
 exp_block:  INDENT exp+ DEDENT ;
 exp : exp_stmt | stmt | if_statement | while_statement;
 exp_stmt: stmt NEWLINE;
 stmt: func_call | var_decl | a_op | b_op;
 
+type : 'int' | 'float' | 'bool';
+ret_type: type | 'None';
 var : ID;
 int : INT;
 float : FLOAT;
@@ -99,8 +101,9 @@ b_op : a_op '>' a_op
     | var
     ;
 
+arg: var ':' type;
+args:  '(' (arg (',' arg)* )* ')';
 param: var | a_op | b_op;
-
 params: '(' (param (',' param)* )* ')';
 
 func_call: var params ;
