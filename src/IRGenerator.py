@@ -482,15 +482,23 @@ class IRGenerator(LangVisitor):
             self.builder.branch(while_else_block)
             self.builder.position_at_start(while_else_block)
             self.visit(ctx.getChild(5))
-            self.builder.branch(end_while_else_block)
+            if (not self.builder.block.is_terminated):
+                self.builder.branch(end_while_else_block)
             self.builder.position_at_start(end_while_else_block)
 
         return 0
 
     # Visit a parse tree produced by LangParser#function.
     def visitFunction(self, ctx:LangParser.FunctionContext):
-        size = ctx.getChildCount()
         old_builder = self.builder
+        old_num = self.num
+        old_if_else = self.if_else
+        old_stack = self.stack
+        old_while_stmt = self.while_stmt
+        self.num = 0
+        self.if_else = -1
+        self.stack=[]
+        self.while_stmt = 0
         # old_symbol_table = self.symbol_table
         # old_address_table = self.address_table
         func_name = self.visit(ctx.getChild(1))[0]
@@ -526,6 +534,11 @@ class IRGenerator(LangVisitor):
                      self.builder.ret(ir.Constant(ir.IntType(1), 0))
         # self.builder.block
         self.builder = old_builder
+        self.num = old_num
+        self.if_else = old_if_else
+        self.stack = old_stack
+        self.while_stmt = old_while_stmt
+        
         return 0
 
     
