@@ -58,33 +58,18 @@ def printf(builder, format, num, *args):
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt] + list(args))
 
-
 def print_func(builder, num, func_param):
-    i = func_param[0]
-    typ = i[1]
-    if typ=="IntVar":
-        res = builder.load(i[0])
-        printf(builder, "%d\n", num, res)
-    elif typ=="FloatVar":
-        res = builder.load(i[0])
-        res1 = builder.fpext(res, ir.DoubleType())
-        printf(builder, "%f\n", num, res1)
-    elif typ=="DoubleVar":
-        res = builder.load(i[0])
-        printf(builder, "%f\n", num, res)
-    elif typ=="BoolVar":
-        res = builder.load(i[0])
-        print_bool(builder, res)
-    elif typ=="IntVal":
-        printf(builder, "%d\n", num, i[0])
+    val = func_param[0] # It is a tuple
+    typ = func_param[1]
+    if typ=="IntVal":
+        printf(builder, "%d\n", num, val)
     elif typ=="FloatVal":
-        res = builder.fpext(i[0], ir.DoubleType())
+        res = builder.fpext(val, ir.DoubleType())
         printf(builder, "%f\n", num, res)
     elif typ=="DoubleVal":
-        printf(builder, "%f\n", num, i[0])
+        printf(builder, "%f\n", num, val)
     elif typ=="BoolVal":
-        print_bool(builder, i[0])
-
+        print_bool(builder, val)
 
 def printb(builder, format):
     assert isinstance(format, str)

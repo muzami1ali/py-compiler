@@ -27,7 +27,8 @@ def nextToken(self):
 
 }
 KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not' 
-    | 'while' | 'continue' | 'break'
+    | 'while' | 'continue' | 'break' | 'int' | 'float' | 'bool' | 'None' 
+    | 'return'
     ;
 COMMENT: '#' ~[\r\n]* -> skip;
 BOOL: 'True' | 'False';
@@ -53,13 +54,17 @@ LINE_ESCAPE: '\\' '\r'? '\n' -> skip ;
 
 // parser rules
 prog : newl_ignore file newl_ignore EOF;
-file :  exp*;
+file :  (exp | function)*;
 
+function: 'def' var args '->' ret_type ':' exp_block ;
+ret_smt: 'return' (func_call | a_op | b_op);
 exp_block:  INDENT exp+ DEDENT ;
 exp : exp_stmt | stmt | if_statement | while_statement;
 exp_stmt: stmt NEWLINE;
-stmt: var_decl | a_op | b_op | func_call;
+stmt: func_call | var_decl | a_op | b_op | ret_smt;
 
+type : 'int' | 'float' | 'bool';
+ret_type: type | 'None';
 var : ID;
 int : INT;
 float : FLOAT;
@@ -81,6 +86,7 @@ aop2: aop1 '**' aop2
     | aop1 
     ;
 aop1: int 
+    | func_call
     | var
     | float
     ;
@@ -95,14 +101,16 @@ b_op : a_op '>' a_op
     | b_op 'or' b_op
     | 'not' b_op
     | bool
+    | func_call
     | var
     ;
 
-param: var | a_op | b_op;
-
+func_call: var params ;
+arg: var ':' type;
+args:  '(' (arg (',' arg)* )* ')';
+param: var | a_op | b_op | func_call;
 params: '(' (param (',' param)* )* ')';
 
-func_call: var params ;
 
 aop_var : var '=' a_op;
 int_var : var '=' int;
@@ -111,7 +119,6 @@ bool_var : var '=' b_op;
 
 var_decl : int_var | float_var | bool_var | aop_var;
 
-function: 'def' var params ':' exp+ ;
 
 main_func: 'if __name__ == "__main__" :' exp+;
 

@@ -19,6 +19,16 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#function.
+    def visitFunction(self, ctx:LangParser.FunctionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#ret_smt.
+    def visitRet_smt(self, ctx:LangParser.Ret_smtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#exp_block.
     def visitExp_block(self, ctx:LangParser.Exp_blockContext):
         return self.visitChildren(ctx)
@@ -36,6 +46,16 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#stmt.
     def visitStmt(self, ctx:LangParser.StmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#type.
+    def visitType(self, ctx:LangParser.TypeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#ret_type.
+    def visitRet_type(self, ctx:LangParser.Ret_typeContext):
         return self.visitChildren(ctx)
 
 
@@ -94,6 +114,21 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#func_call.
+    def visitFunc_call(self, ctx:LangParser.Func_callContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#arg.
+    def visitArg(self, ctx:LangParser.ArgContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#args.
+    def visitArgs(self, ctx:LangParser.ArgsContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#param.
     def visitParam(self, ctx:LangParser.ParamContext):
         return self.visitChildren(ctx)
@@ -101,11 +136,6 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#params.
     def visitParams(self, ctx:LangParser.ParamsContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#func_call.
-    def visitFunc_call(self, ctx:LangParser.Func_callContext):
         return self.visitChildren(ctx)
 
 
@@ -131,11 +161,6 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#var_decl.
     def visitVar_decl(self, ctx:LangParser.Var_declContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#function.
-    def visitFunction(self, ctx:LangParser.FunctionContext):
         return self.visitChildren(ctx)
 
 

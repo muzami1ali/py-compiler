@@ -90,20 +90,22 @@ def double_op(op,lhs,rhs,builder):
         case "**":
             return (pow(builder,lhs,rhs), "DoubleVal")
 
+def getVarVal(var, typ, symT, addrT, builder):
+    if typ == "Var":
+        var_typ = symT[var]
+        param  = len(re.findall("Arg",var_typ))
+        if param:
+            typ = re.sub("Arg", "Val", var_typ)
+            var = addrT[var]
+        else:
+            typ = re.sub("Var", "Val", var_typ)
+            addr = addrT[var]
+            var = builder.load(addr)
+    return (var,typ)
 
 def aop(op,lhs,rhs,builder,symT,addrT):
-    lhs_val = lhs[0]
-    lhs_typ = lhs[1]
-    if lhs_typ == "Var":
-        lhs_typ = re.sub("Var", "Val", symT[lhs_val])
-        addr = addrT[lhs_val]
-        lhs_val = builder.load(addr)
-    rhs_val = rhs[0]
-    rhs_typ = rhs[1]
-    if rhs_typ == "Var":
-        rhs_typ = re.sub("Var", "Val", symT[rhs_val])
-        addr = addrT[rhs_val]
-        rhs_val = builder.load(addr)
+    lhs_val, lhs_typ = getVarVal(lhs[0],lhs[1],symT,addrT,builder)
+    rhs_val, rhs_typ = getVarVal(rhs[0],rhs[1],symT,addrT,builder)
 
     if rhs_typ == lhs_typ:
         if lhs_typ == "IntVal":
