@@ -101,15 +101,17 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#file.
     def visitFile(self, ctx:LangParser.FileContext):
+        #    RULE_ret_smt = 3
         num = ctx.getChildCount()
         for i in range(num):
             self.visit(ctx.getChild(i))
-            
         return 0
 
 
     # Visit a parse tree produced by LangParser#exp.
     def visitExp(self, ctx:LangParser.ExpContext):
+        if self.builder.block.is_terminated:
+            raise SystemExit("ERROR: Unreachable code")
         self.visit(ctx.getChild(0)) 
         return 0
 
@@ -301,7 +303,7 @@ class IRGenerator(LangVisitor):
                 # print(func_param)
                 return (self.builder.call(func[0],vals), func[1])
             except KeyError:
-                raise Exception(f"{func_name} has not been declared")
+                raise SystemExit(f"ERROR:{func_name} has not been declared")
         return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
@@ -364,7 +366,7 @@ class IRGenerator(LangVisitor):
                 var_addr = self.address_table[var_name]
                 self.builder.store(var_val, var_addr)
             else: 
-                raise Exception(f"{var_name} changed from {var_old_typ} to {var_type} \n Details: \n {var_info}")
+                raise SystemExit(f"ERROR:{var_name} changed from {var_old_typ} to {var_type} \n Details: \n {var_info}")
                 # var_addr = self.builder.alloca(checkType(var_type), name=var_name)
                 # self.builder.store(var_val, var_addr)
                 # self.address_table[var_name] = var_addr
@@ -491,14 +493,14 @@ class IRGenerator(LangVisitor):
     # Visit a parse tree produced by LangParser#function.
     def visitFunction(self, ctx:LangParser.FunctionContext):
         old_builder = self.builder
-        old_num = self.num
-        old_if_else = self.if_else
-        old_stack = self.stack
-        old_while_stmt = self.while_stmt
-        self.num = 0
-        self.if_else = -1
-        self.stack=[]
-        self.while_stmt = 0
+        # old_num = self.num
+        # old_if_else = self.if_else
+        # old_stack = self.stack
+        # old_while_stmt = self.while_stmt
+        # self.num = 0
+        # self.if_else = -1
+        # self.stack=[]
+        # self.while_stmt = 0
         # old_symbol_table = self.symbol_table
         # old_address_table = self.address_table
         func_name = self.visit(ctx.getChild(1))[0]
@@ -534,16 +536,19 @@ class IRGenerator(LangVisitor):
                      self.builder.ret(ir.Constant(ir.IntType(1), 0))
         # self.builder.block
         self.builder = old_builder
-        self.num = old_num
-        self.if_else = old_if_else
-        self.stack = old_stack
-        self.while_stmt = old_while_stmt
+        # self.num = old_num
+        # self.if_else = old_if_else
+        # self.stack = old_stack
+        # self.while_stmt = old_while_stmt
         
         return 0
 
     
     # Visit a parse tree produced by LangParser#ret_smt.
     def visitRet_smt(self, ctx:LangParser.Ret_smtContext):
+        func_name = self.builder.function.name
+        if func_name == "main":
+            raise SystemExit("ERROR: Return statement not allowed outside function")
         self.builder.ret(self.visit(ctx.getChild(1))[0])
 
 
