@@ -6,14 +6,15 @@ define i32 @"main"()
 {
 entry:
   %"nterms" = alloca i32
-  store i32 20, i32* %"nterms"
   %"n1" = alloca i32
-  store i32 0, i32* %"n1"
   %"n2" = alloca i32
-  store i32 1, i32* %"n2"
   %"count" = alloca i32
-  store i32 0, i32* %"count"
   %"ifvar0" = alloca i1
+  %"nth" = alloca i32
+  store i32 20, i32* %"nterms"
+  store i32 0, i32* %"n1"
+  store i32 1, i32* %"n2"
+  store i32 0, i32* %"count"
   store i1 1, i1* %"ifvar0"
   %".7" = load i32, i32* %"nterms"
   %".8" = icmp sle i32 %".7", 0
@@ -54,7 +55,6 @@ while_block_0:
   %".35" = load i32, i32* %"n1"
   %".36" = load i32, i32* %"n2"
   %".37" = add i32 %".35", %".36"
-  %"nth" = alloca i32
   store i32 %".37", i32* %"nth"
   %".39" = load i32, i32* %"n2"
   store i32 %".39", i32* %"n1"

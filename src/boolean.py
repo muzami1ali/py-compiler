@@ -4,7 +4,10 @@ import re
 
 def getVarVal(var, typ, symT, addrT, builder):
     if typ == "Var":
-        var_typ = symT[var]
+        try:
+            var_typ = symT[var]
+        except KeyError:
+            raise Exception(f"Variable {var} not defined")
         param  = len(re.findall("Arg",var_typ))
         if param:
             typ = re.sub("Arg", "Val", var_typ)
