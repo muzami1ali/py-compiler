@@ -64,9 +64,9 @@ class IRGenerator(LangVisitor):
         self.module = ir.Module(name=self.moduleName)
 
         self.symbol_table = dict()
+        self.address_table = dict()
         self.func_table = dict()
         self.args_table = dict()
-        self.address_table = dict()
         
         # set up main function
         func_ty = ir.FunctionType(ir.IntType(32), [])
@@ -501,8 +501,10 @@ class IRGenerator(LangVisitor):
         # self.if_else = -1
         # self.stack=[]
         # self.while_stmt = 0
-        # old_symbol_table = self.symbol_table
-        # old_address_table = self.address_table
+        old_symbol_table = self.symbol_table
+        old_address_table = self.address_table
+        self.symbol_table = dict()
+        self.address_table = dict()
         func_name = self.visit(ctx.getChild(1))[0]
         names, typs, args = self.visit(ctx.getChild(2))
         return_type = self.visit(ctx.getChild(4))
@@ -536,6 +538,8 @@ class IRGenerator(LangVisitor):
                      self.builder.ret(ir.Constant(ir.IntType(1), 0))
         # self.builder.block
         self.builder = old_builder
+        self.symbol_table = old_symbol_table
+        self.address_table = old_address_table
         # self.num = old_num
         # self.if_else = old_if_else
         # self.stack = old_stack
