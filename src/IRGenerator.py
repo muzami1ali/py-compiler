@@ -27,7 +27,10 @@ def getVarVal(var, symT, addrT, builder):
     var_val = var[0]
     var_type = var[1] 
     if var_type == "Var":
-        var_typ = symT[var_val]
+        try: 
+            var_typ = symT[var_val]
+        except KeyError:
+            raise SystemExit(f"ERROR:{var_val} has not been declared")
         param  = len(re.findall("Arg",var_typ))
         if param:
             return addrT[var]
@@ -39,7 +42,10 @@ def getVarVal(var, symT, addrT, builder):
 
 def getVar(var, typ, symT, addrT, builder):
     if typ == "Var":
-        var_typ = symT[var]
+        try: 
+            var_typ = symT[var]
+        except KeyError:
+            raise SystemExit(f"ERROR:{var} has not been declared")
         param  = len(re.findall("Arg",var_typ))
         if param:
             typ = re.sub("Arg", "Val", var_typ)
@@ -255,7 +261,10 @@ class IRGenerator(LangVisitor):
         if child[1] == "Var":
         # if(ctx.getChild(0).getRuleIndex()==6): #Var rule index is 4
             param = child[0]
-            typ = self.symbol_table[param]
+            try:
+                typ = self.symbol_table[param]
+            except KeyError:
+                raise SystemExit(f"ERROR:{param} has not been declared")
             arg =  len(re.findall("Arg",typ)) 
             if arg:
                 param_type = re.sub("Arg", "Val", typ)
@@ -374,6 +383,12 @@ class IRGenerator(LangVisitor):
                 # self.address_table[var_name] = var_addr
                 # self.symbol_table[var_name] = var_type
         except KeyError:
+            """
+                Variable are allocated in the entry block
+                in order that they are ready to be used
+                when the program starts, the value is stored
+                by moving to current block and storing the value
+            """
             current_block = self.builder.block
             if self.instr == None:
                 self.builder.position_at_start(self.entry_block)
