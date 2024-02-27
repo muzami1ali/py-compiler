@@ -19,18 +19,6 @@ def getVarVal(var, typ, symT, addrT, builder):
 def bop(op,lhs,rhs,builder,symT,addrT):
     lhs_val, lhs_typ = getVarVal(lhs[0],lhs[1],symT,addrT,builder)
     rhs_val, rhs_typ = getVarVal(rhs[0],rhs[1],symT,addrT,builder)
-    # lhs_val = lhs[0]
-    # lhs_typ = lhs[1]
-    # if lhs_typ == "Var":
-    #     lhs_typ = re.sub("Var", "Val", symT[lhs_val])
-    #     addr = addrT[lhs_val]
-    #     lhs_val = builder.load(addr)
-    # rhs_val = rhs[0]
-    # rhs_typ = rhs[1]
-    # if rhs_typ == "Var":
-    #     rhs_typ = re.sub("Var", "Val", symT[rhs_val])
-    #     addr = addrT[rhs_val]
-    #     rhs_val = builder.load(addr)
 
     if rhs_typ == lhs_typ:
         if lhs_typ == "IntVal":

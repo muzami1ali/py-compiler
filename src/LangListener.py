@@ -35,6 +35,15 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#ret_smt.
+    def enterRet_smt(self, ctx:LangParser.Ret_smtContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#ret_smt.
+    def exitRet_smt(self, ctx:LangParser.Ret_smtContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#exp_block.
     def enterExp_block(self, ctx:LangParser.Exp_blockContext):
         pass
@@ -188,6 +197,15 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#func_call.
+    def enterFunc_call(self, ctx:LangParser.Func_callContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#func_call.
+    def exitFunc_call(self, ctx:LangParser.Func_callContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#arg.
     def enterArg(self, ctx:LangParser.ArgContext):
         pass
@@ -221,15 +239,6 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#params.
     def exitParams(self, ctx:LangParser.ParamsContext):
-        pass
-
-
-    # Enter a parse tree produced by LangParser#func_call.
-    def enterFunc_call(self, ctx:LangParser.Func_callContext):
-        pass
-
-    # Exit a parse tree produced by LangParser#func_call.
-    def exitFunc_call(self, ctx:LangParser.Func_callContext):
         pass
 
 

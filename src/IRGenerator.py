@@ -207,7 +207,16 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#ret_type.
     def visitRet_type(self, ctx:LangParser.Ret_typeContext):
-        return self.visitChildren(ctx)
+        typ = ctx.getText()
+        match typ:
+            case 'int':
+                return (ir.IntType(32), typ, 'IntVal')
+            case 'float':
+                return (ir.DoubleType(), typ, 'DoubleVal')
+            case 'bool':
+                return (ir.IntType(1), typ, 'BoolVal')
+            case 'None':
+                return (ir.VoidType(), typ, 'NoneVal')
 
 
     # Visit a parse tree produced by LangParser#arg.
@@ -223,7 +232,7 @@ class IRGenerator(LangVisitor):
     def visitArgs(self, ctx:LangParser.ArgsContext):
         size = ctx.getChildCount()
         if size == 2:
-            return ([],[])
+            return ([],[],[])
         else:
             names = []
             typs = []
@@ -260,7 +269,7 @@ class IRGenerator(LangVisitor):
     def visitParams(self, ctx:LangParser.ParamsContext):
         size = ctx.getChildCount()
         if size == 2:
-            return []
+            return ([], [])
         else:
             vals = []
             typs = []
@@ -284,12 +293,13 @@ class IRGenerator(LangVisitor):
             try:
                 """
                     Need to add error handling in parameters
+                    error handling in return statements
                     Scoping 
                 """
                 func = self.func_table[func_name]
                 arg_typs = self.args_table[func_name]
                 # print(func_param)
-                self.builder.call(func,vals)
+                return (self.builder.call(func[0],vals), func[1])
             except KeyError:
                 raise Exception(f"{func_name} has not been declared")
         return 0
@@ -394,7 +404,8 @@ class IRGenerator(LangVisitor):
         self.builder.position_at_start(if_block)
         self.builder.store(false, addr)
         self.visit(ctx.getChild(2))
-        self.builder.branch(endif_block)
+        if(not self.builder.block.is_terminated):
+            self.builder.branch(endif_block)
         self.builder.position_at_start(endif_block)
 
 
@@ -411,7 +422,8 @@ class IRGenerator(LangVisitor):
         self.builder.position_at_start(elif_block)
         self.builder.store(false, addr)
         self.visit(ctx.getChild(2))
-        self.builder.branch(end_elif_block)
+        if(not self.builder.block.is_terminated):
+            self.builder.branch(end_elif_block)
         self.builder.position_at_start(end_elif_block)
         
 
@@ -426,7 +438,8 @@ class IRGenerator(LangVisitor):
         self.builder.cbranch(pred,else_block,end_else_block)
         self.builder.position_at_start(else_block)
         self.visit(ctx.getChild(2))
-        self.builder.branch(end_else_block)
+        if(not self.builder.block.is_terminated):
+            self.builder.branch(end_else_block)
         self.builder.position_at_start(end_else_block)
 
     
@@ -460,9 +473,10 @@ class IRGenerator(LangVisitor):
         self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(while_block)
         self.visit(ctx.getChild(2))
-        pred = getVarVal(self.visit(ctx.getChild(1)), self.symbol_table, self.address_table, self.builder)
-        # pred = self.visit(ctx.getChild(1))[0]
-        self.builder.cbranch(pred,while_block,end_while_block)
+        if(not self.builder.block.is_terminated):
+            pred = getVarVal(self.visit(ctx.getChild(1)), self.symbol_table, self.address_table, self.builder)
+            # pred = self.visit(ctx.getChild(1))[0]
+            self.builder.cbranch(pred,while_block,end_while_block)
         self.builder.position_at_start(end_while_block)
         if(size > 3):
             self.builder.branch(while_else_block)
@@ -483,8 +497,8 @@ class IRGenerator(LangVisitor):
         names, typs, args = self.visit(ctx.getChild(2))
         return_type = self.visit(ctx.getChild(4))
         # print(func_name)
-        # print(return_type)
-        func_ty = ir.FunctionType(ir.VoidType(), args)
+        print(return_type)
+        func_ty = ir.FunctionType(return_type[0], args)
         func = ir.Function(self.module, func_ty, name=func_name)
         args = func.args
         for i in range(len(names)):
@@ -494,15 +508,32 @@ class IRGenerator(LangVisitor):
             arg.name = name
         # func.args = args
         print(args)
-        self.func_table[func_name] = func
+        self.func_table[func_name] = (func, return_type[2])
         self.args_table[func_name] = typs
         block = func.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(block)
         # visit body
         self.visit(ctx.getChild(6))
-        self.builder.ret_void()
+        if(not self.builder.block.is_terminated):
+            match return_type[1]:
+                case 'None':
+                    self.builder.ret_void()
+                case 'int':
+                     self.builder.ret(ir.Constant(ir.IntType(32), 0))
+                case 'float':
+                     self.builder.ret(ir.Constant(ir.DoubleType(), 0.0))
+                case 'bool':
+                     self.builder.ret(ir.Constant(ir.IntType(1), 0))
+        # self.builder.block
         self.builder = old_builder
         return 0
+
+    
+    # Visit a parse tree produced by LangParser#ret_smt.
+    def visitRet_smt(self, ctx:LangParser.Ret_smtContext):
+        self.builder.ret(self.visit(ctx.getChild(1))[0])
+
+
     #
     #
     # # Visit a parse tree produced by LangParser#main_func.
