@@ -54,6 +54,8 @@ def getVar(var, typ, symT, addrT, builder):
             typ = re.sub("Var", "Val", var_typ)
             addr = addrT[var]
             var = builder.load(addr)
+    typ = re.sub("Val","Var",typ)
+    # typ = typ1
     return (var,typ)
 
 
@@ -320,16 +322,8 @@ class IRGenerator(LangVisitor):
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         aop  = self.visit(ctx.getChild(2))
-        # aop_val = aop[0]
-        # aop_typ = aop[1]
         aop_val, aop_typ = getVar(aop[0],aop[1],self.symbol_table,self.address_table,self.builder)
-        # if aop_typ == "Var":
-        #     var_addr = self.address_table[aop_val]
-        #     typ = self.symbol_table[aop_val]
-        #     val = self.builder.load(var_addr)
-        #     return (var_name, val, typ)
-        typ = re.sub("Val","Var",aop_typ)
-        return (var_name,aop_val, typ)
+        return (var_name,aop_val, aop_typ)
 
 
 
@@ -352,17 +346,7 @@ class IRGenerator(LangVisitor):
         var_name = self.visit(ctx.getChild(0))[0]
         var  = self.visit(ctx.getChild(2))
         var_val, var_typ = getVar(var[0],var[1],self.symbol_table,self.address_table,self.builder)
-        # var_val = var[0]
-        # var_typ = var[1]
-        # if var_typ == "Var":
-        #     var_addr = self.address_table[var_val]
-        #     typ = self.symbol_table[var_val]
-        #     val = self.builder.load(var_addr)
-        #     return (var_name, val, typ)
-
-        # print(var)
-        typ = re.sub("Val","Var",var_typ)
-        return (var_name, var_val, typ)
+        return (var_name, var_val, var_typ)
 
 
     # Visit a parse tree produced by LangParser#var_decl.
