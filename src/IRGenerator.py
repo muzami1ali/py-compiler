@@ -74,6 +74,8 @@ class IRGenerator(LangVisitor):
         block = func.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(block)
 
+        self.entry_block = block
+        self.instr = None
         self.num = 0
         self.if_else = -1
         self.stack=[]
@@ -372,7 +374,14 @@ class IRGenerator(LangVisitor):
                 # self.address_table[var_name] = var_addr
                 # self.symbol_table[var_name] = var_type
         except KeyError:
+            current_block = self.builder.block
+            if self.instr == None:
+                self.builder.position_at_start(self.entry_block)
+            else:
+                self.builder.position_after(self.instr)
             var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+            self.instr = var_addr
+            self.builder.position_at_end(current_block)
             self.builder.store(var_val, var_addr)
             self.address_table[var_name] = var_addr
             self.symbol_table[var_name] = var_type
@@ -450,7 +459,14 @@ class IRGenerator(LangVisitor):
         self.if_else += 1
         self.stack.append(self.if_else)
         var_name= f"ifvar{self.if_else}"
+        current_block = self.builder.block
+        if self.instr == None:
+            self.builder.position_at_start(self.entry_block)
+        else:
+            self.builder.position_after(self.instr)
         var_addr = self.builder.alloca( ir.IntType(1), name=var_name)
+        self.instr = var_addr
+        self.builder.position_at_end(current_block)
         self.builder.store(true, var_addr)
         self.address_table[var_name] = var_addr
         size = ctx.getChildCount()
@@ -493,6 +509,8 @@ class IRGenerator(LangVisitor):
     # Visit a parse tree produced by LangParser#function.
     def visitFunction(self, ctx:LangParser.FunctionContext):
         old_builder = self.builder
+        old_entry_block = self.entry_block
+        old_instr = self.instr
         # old_num = self.num
         # old_if_else = self.if_else
         # old_stack = self.stack
@@ -524,6 +542,8 @@ class IRGenerator(LangVisitor):
         self.args_table[func_name] = typs
         block = func.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(block)
+        self.entry_block = block
+        self.instr = None
         # visit body
         self.visit(ctx.getChild(6))
         if(not self.builder.block.is_terminated):
@@ -538,6 +558,8 @@ class IRGenerator(LangVisitor):
                      self.builder.ret(ir.Constant(ir.IntType(1), 0))
         # self.builder.block
         self.builder = old_builder
+        self.entry_block = old_entry_block
+        self.instr = old_instr
         self.symbol_table = old_symbol_table
         self.address_table = old_address_table
         # self.num = old_num

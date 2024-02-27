@@ -6,11 +6,11 @@ define i32 @"main"()
 {
 entry:
   %"ifvar0" = alloca i1
+  %"foo" = alloca i32
   store i1 1, i1* %"ifvar0"
   br i1 1, label %"if_block_0", label %"endif_block_0"
 if_block_0:
   store i1 0, i1* %"ifvar0"
-  %"foo" = alloca i32
   store i32 42, i32* %"foo"
   br label %"endif_block_0"
 endif_block_0:
