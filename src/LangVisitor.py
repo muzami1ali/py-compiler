@@ -49,6 +49,11 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#list.
+    def visitList(self, ctx:LangParser.ListContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#type.
     def visitType(self, ctx:LangParser.TypeContext):
         return self.visitChildren(ctx)
@@ -139,6 +144,11 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#list_var.
+    def visitList_var(self, ctx:LangParser.List_varContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#aop_var.
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
         return self.visitChildren(ctx)
@@ -161,11 +171,6 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#var_decl.
     def visitVar_decl(self, ctx:LangParser.Var_declContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#main_func.
-    def visitMain_func(self, ctx:LangParser.Main_funcContext):
         return self.visitChildren(ctx)
 
 

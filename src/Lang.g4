@@ -63,6 +63,7 @@ exp : exp_stmt | stmt | if_statement | while_statement;
 exp_stmt: stmt NEWLINE;
 stmt: func_call | var_decl | a_op | b_op | ret_smt;
 
+list : '[' (a_op (',' a_op)*)? ']';
 type : 'int' | 'float' | 'bool';
 ret_type: type | 'None';
 var : ID;
@@ -109,18 +110,19 @@ func_call: var params ;
 arg: var ':' type;
 args:  '(' (arg (',' arg)* )* ')';
 param: var | a_op | b_op | func_call;
-params: '(' (param (',' param)* )* ')';
+params: '(' (param (',' param)* )? ')';
 
 
+list_var : var '=' list;
 aop_var : var '=' a_op;
 int_var : var '=' int;
 float_var: var '=' float;
 bool_var : var '=' b_op;
 
-var_decl : int_var | float_var | bool_var | aop_var;
+var_decl : list_var | int_var | float_var | bool_var | aop_var;
 
 
-main_func: 'if __name__ == "__main__" :' exp+;
+//main_func: 'if __name__ == "__main__" :' exp+;
 
 
 
