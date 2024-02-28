@@ -54,7 +54,6 @@ def getVar(var, typ, symT, addrT, builder):
             typ = re.sub("Var", "Val", var_typ)
             addr = addrT[var]
             var = builder.load(addr)
-    typ = re.sub("Val","Var",typ)
     # typ = typ1
     return (var,typ)
 
@@ -322,8 +321,9 @@ class IRGenerator(LangVisitor):
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         aop  = self.visit(ctx.getChild(2))
-        aop_val, aop_typ = getVar(aop[0],aop[1],self.symbol_table,self.address_table,self.builder)
-        return (var_name,aop_val, aop_typ)
+        aop_val, typ = getVar(aop[0],aop[1],self.symbol_table,self.address_table,self.builder)
+        # typ = re.sub("Val","Var",typ)
+        return (var_name,aop_val, typ)
 
 
 
@@ -345,8 +345,9 @@ class IRGenerator(LangVisitor):
     def visitBool_var(self, ctx:LangParser.Bool_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
         var  = self.visit(ctx.getChild(2))
-        var_val, var_typ = getVar(var[0],var[1],self.symbol_table,self.address_table,self.builder)
-        return (var_name, var_val, var_typ)
+        var_val, typ = getVar(var[0],var[1],self.symbol_table,self.address_table,self.builder)
+        # typ = re.sub("Val","Var",typ)
+        return (var_name, var_val, typ)
 
 
     # Visit a parse tree produced by LangParser#var_decl.
@@ -355,6 +356,7 @@ class IRGenerator(LangVisitor):
         var_name = var_info[0]
         var_val = var_info[1]
         var_type = var_info[2]
+        var_typ = re.sub("Val","Var",var_typ)
         try: 
             var_old_typ = self.symbol_table[var_name]
             if (var_old_typ==var_type):
@@ -572,9 +574,15 @@ class IRGenerator(LangVisitor):
     # Visit a parse tree produced by LangParser#ret_smt.
     def visitRet_smt(self, ctx:LangParser.Ret_smtContext):
         func_name = self.builder.function.name
+        func_return_type = self.func_table[func_name][1]
+        print(func_return_type)
         if func_name == "main":
             raise SystemExit("ERROR: Return statement not allowed outside function")
-        self.builder.ret(self.visit(ctx.getChild(1))[0])
+        ret = self.visit(ctx.getChild(1))
+        ret_val, ret_typ = getVar(ret[0],ret[1],self.symbol_table,self.address_table,self.builder)
+        if ret_typ != func_return_type:
+            raise SystemExit(f"ERROR: Return type {ret_typ} does not match function return type {func_return_type}")
+        self.builder.ret(ret_val)
 
 
     #
