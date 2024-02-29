@@ -9,41 +9,34 @@ list_struct = ir.LiteralStructType([
                                 val_typ.as_pointer(), # pointer array element
                                 ir.IntType(32), # length of the list
                                 ir.IntType(32), # max length of the list
-                                ir.IntType(32) #  factor type of the list
+                                ir.IntType(32) #  Number of elements
                                 ])
 
 
 def create_list(module):
-    # add malloc function
-    # fty1 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(32)])
-    # malloc = ir.Function(module, fty1, name="malloc")
-    # # add free function
-    # fty2 = ir.FunctionType(ir.VoidType(), [ir.IntType(8).as_pointer()])
-    # free = ir.Function(module, fty2, name="free")
-    # # add memcopy function
-    # fty3 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(8).as_pointer(), ir.IntType(8).as_pointer(), ir.IntType(32)])
-    # memcpy = ir.Function(module, fty3, name="memcpy")
+    try:
+        func = module.get_global("create_list")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer()])
+        func = ir.Function(module, func_typ, name="create_list")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg = func.args[0]
+        # Initialize
+        ptr1 = builder.gep(arg, [int0, int0])
+        builder.store(ir.Constant(ir.IntType(8).as_pointer(), None), ptr1)
 
+        ptr2 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 1)])
+        builder.store(ir.Constant(ir.IntType(32), 0), ptr2)
 
-    func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer()])
-    func = ir.Function(module, func_typ, name="create_list")
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    arg = func.args[0]
-    # Initialize
-    ptr1 = builder.gep(arg, [int0, int0])
-    builder.store(ir.Constant(val_typ.as_pointer(), None), ptr1)
+        ptr3 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 2)])
+        builder.store(ir.Constant(ir.IntType(32), 0), ptr3)
 
-    ptr2 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 1)])
-    builder.store(ir.Constant(ir.IntType(32), 0), ptr2)
+        # ptr4 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
+        # builder.store(ir.Constant(ir.IntType(32), 0), ptr4)
 
-    ptr3 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 2)])
-    builder.store(ir.Constant(ir.IntType(32), 0), ptr3)
-
-    ptr4 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
-    builder.store(ir.Constant(ir.IntType(32), 0), ptr4)
-
-    builder.ret_void()
+        builder.ret_void()
+    return func
 
 def delete_list(module):
     func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer()])
@@ -61,40 +54,42 @@ def delete_list(module):
 
     builder.position_at_end(free_begin)
     builder.call(free, [ptr])
-    builder.store(ir.Constant(val_typ.as_pointer(), None), builder.gep(arg, [int0, int0]))
+    builder.store(ir.Constant(ir.IntType(8).as_pointer(), None), builder.gep(arg, [int0, int0]))
     builder.branch(free_end)
 
     builder.position_at_end(free_end)
     builder.ret_void()
 
 def resize_list(module):
-    func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32)])
-    func = ir.Function(module, func_typ, name="resize_list")
-    global resize_func
-    resize_func = func
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    arg1 = func.args[0]
-    arg2 = func.args[1]
-    # get the length of the list
-    output = builder.call(malloc, [arg2])
+    try:
+        func = module.get_global("resize_list")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32)])
+        func = ir.Function(module, func_typ, name="resize_list")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
 
-    ptr1 = builder.gep(arg1, [int0, int0])
-    buffer = builder.load(ptr1)
+        new_mem_block = builder.call(get_malloc(module), [arg2])
 
-    ptr2 = builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)])
-    length = builder.load(ptr2)
+        ptr1 = builder.gep(arg1, [int0, int0])
+        buffer = builder.load(ptr1)
 
-    builder.call(memcpy, [output, buffer, length])
+        ptr2 = builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)])
+        length = builder.load(ptr2)
 
-    builder.call(free, [buffer])
+        builder.call(get_memcpy(module), [new_mem_block, buffer, length])
 
-    builder.store(output, ptr1)
+        builder.call(get_free(module), [buffer])
 
-    ptr3 = builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 2)])
-    builder.store(arg2, ptr3)
-    
-    builder.ret_void()
+        builder.store(new_mem_block, ptr1)
+
+        ptr3 = builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 2)])
+        builder.store(arg2, ptr3)
+        
+        builder.ret_void()
+    return func
 
 def get_list_length(module):
     func_typ = ir.FunctionType(ir.IntType(32), [list_struct.as_pointer()])
@@ -102,7 +97,7 @@ def get_list_length(module):
     block = func.append_basic_block(name="entry")
     builder = ir.IRBuilder(block)
     arg = func.args[0]
-    ptr = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 1)])
+    ptr = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
     length = builder.load(ptr)
     builder.ret(length)
 
@@ -146,97 +141,160 @@ def set_list_element(module):
 #     builder.store(ir.Constant(val_typ, 0), ptr2)
 #     builder.ret_void()
 
-def append_list(module):
-    func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), val_typ])
-    func = ir.Function(module, func_typ, name="append_list")
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    arg1 = func.args[0]
-    arg2 = func.args[1]
-    # get the length of the list
-    length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
-    # get the max length of the list
-    max_length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 2)]))
+def append_char_list(module,):
+    try:
+        func = module.get_global("append_char_list")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(8)])
+        func = ir.Function(module, func_typ, name="append_char_list")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
+        # get the length of the list
+        length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+        # get the max length of the list
+        max_length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 2)]))
 
-    grow_begin = builder.append_basic_block("grow_begin")
-    grow_end = builder.append_basic_block("grow_end")
-    pred = builder.icmp_unsigned("==", length, max_length)
-    builder.cbranch(pred, grow_begin, grow_end)
-    builder.position_at_end(grow_begin)
-    factor = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
-    sum = builder.add(factor, max_length)
-    builder.call(resize_func, [arg1, sum])
-    builder.branch(grow_end)
-    builder.position_at_end(grow_end)
-    buffer = builder.load(builder.gep(arg1, [int0, int0]))
-    getLength = builder.load(builder.gep(buffer, [length]))
-    builder.store(arg2, builder.gep(buffer, [getLength]))
-    updateLength = builder.add(length, ir.Constant(ir.IntType(32), 1))
-    builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+        grow_begin = builder.append_basic_block("grow_begin")
+        grow_end = builder.append_basic_block("grow_end")
+        pred = builder.icmp_unsigned("==", length, max_length)
+        builder.cbranch(pred, grow_begin, grow_end)
+        builder.position_at_end(grow_begin)
+        # factor = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+        factor = ir.Constant(ir.IntType(32), 1)
+        sum = builder.add(factor, max_length)
+        builder.call(resize_list(module), [arg1, sum])
+        builder.branch(grow_end)
+        builder.position_at_end(grow_end)
+        buffer = builder.load(builder.gep(arg1, [int0, int0]))
+        getLength = builder.load(builder.gep(buffer, [length]))
+        builder.store(arg2, builder.gep(buffer, [getLength]))
+        updateLength = builder.add(length, ir.Constant(ir.IntType(32), 1))
+        builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+    return func
+
+def get_malloc(module):
+    try:
+        malloc = module.get_global("malloc")
+    except KeyError:
+        fty1 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(32)])
+        malloc = ir.Function(module, fty1, name="malloc")
+    return malloc
+    
+def get_free(module):
+    try:
+        free = module.get_global("free")
+    except KeyError:
+        fty2 = ir.FunctionType(ir.VoidType(), [ir.IntType(8).as_pointer()])
+        free = ir.Function(module, fty2, name="free")
+    return free
+
+def get_memcpy(module):
+    try:
+        memcpy = module.get_global("memcpy")
+    except KeyError:
+        fty3 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(8).as_pointer(), ir.IntType(8).as_pointer(), ir.IntType(32)])
+        memcpy = ir.Function(module, fty3, name="memcpy")
+    return memcpy
+
+def append_int_list(module):
+    try:
+        func = module.get_global("append_int_list")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32)])
+        func = ir.Function(module, func_typ, name="append_int_list")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
+        # get the length of the list
+        length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+        # get the max length of the list
+        max_length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 2)]))
+
+        grow_begin = builder.append_basic_block("grow_begin")
+        grow_end = builder.append_basic_block("grow_end")
+        pred = builder.icmp_unsigned("==", length, max_length)
+        builder.cbranch(pred, grow_begin, grow_end)
+        builder.position_at_end(grow_begin)
+        # factor = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+        factor = ir.Constant(ir.IntType(32), 4)
+        sum = builder.add(factor, max_length)
+        builder.call(resize_list(module), [arg1, sum])
+        builder.branch(grow_end)
+
+        builder.position_at_end(grow_end)
+
+        buffer_i8 = builder.load(builder.gep(arg1, [int0, int0]))
+        buffer_i32 = builder.bitcast(buffer_i8, ir.IntType(32).as_pointer())
+        index =  builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+
+        builder.store(arg2, builder.gep(buffer_i32, [index]))
+
+        updateLength = builder.add(length, factor)
+        builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+    return func
+
+def append_double_list(module):
+    try:
+        func = module.get_global("append_double_list")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.DoubleType()])
+        func = ir.Function(module, func_typ, name="append_double_list")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
+        # get the length of the list
+        length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+        # get the max length of the list
+        max_length = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 2)]))
+
+        grow_begin = builder.append_basic_block("grow_begin")
+        grow_end = builder.append_basic_block("grow_end")
+        pred = builder.icmp_unsigned("==", length, max_length)
+        builder.cbranch(pred, grow_begin, grow_end)
+        builder.position_at_end(grow_begin)
+        # factor = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+        factor = ir.Constant(ir.IntType(32), 8)
+        sum = builder.add(factor, max_length)
+        builder.call(resize_list(module), [arg1, sum])
+        builder.branch(grow_end)
+
+        builder.position_at_end(grow_end)
+        index =  builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+
+        buffer_i8 = builder.load(builder.gep(arg1, [int0, int0]))
+        buffer_double = builder.bitcast(buffer_i8, ir.DoubleType().as_pointer())
+
+        builder.store(arg2, builder.gep(buffer_double, [index]))
+        # #
+        updateLength = builder.add(length, factor)
+        updateIndex = builder.add(index, ir.Constant(ir.IntType(32),1))
+        builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+        builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
 
 
 
 # resize_func = None
-module = ir.Module()
-fty1 = ir.FunctionType(val_typ.as_pointer(), [ir.IntType(32)])
-malloc = ir.Function(module, fty1, name="malloc")
+# module = ir.Module()
+# fty1 = ir.FunctionType(val_typ.as_pointer(), [ir.IntType(32)])
+# malloc = ir.Function(module, fty1, name="malloc")
 # add free function
-fty2 = ir.FunctionType(ir.VoidType(), [val_typ.as_pointer()])
-free = ir.Function(module, fty2, name="free")
+# fty2 = ir.FunctionType(ir.VoidType(), [val_typ.as_pointer()])
+# free = ir.Function(module, fty2, name="free")
 # add memcopy function
-fty3 = ir.FunctionType(val_typ.as_pointer(), [val_typ.as_pointer(), val_typ.as_pointer(), ir.IntType(32)])
-memcpy = ir.Function(module, fty3, name="memcpy")
-create_list(module)
-delete_list(module)
-resize_list(module)
-append_list(module)
-get_list_length(module)
-get_list_element(module)
-set_list_element(module)
+# fty3 = ir.FunctionType(val_typ.as_pointer(), [val_typ.as_pointer(), val_typ.as_pointer(), ir.IntType(32)])
+# memcpy = ir.Function(module, fty3, name="memcpy")
+# create_list(module)
+# delete_list(module)
+# resize_list(module)
+# append_list(module)
+# get_list_length(module)
+# get_list_element(module)
+# set_list_element(module)
 # fty2 = ir.FunctionType(ir.VoidType(), [ir.IntType(32).as_pointer()])
 # free = ir.Function(module, fty2, name="free")
-print(module)
-
-#
-# def create_list():
-#     return ir.Constant(list_struct, [ir.Constant(ir.IntType(32).as_pointer(), None), ir.Constant(ir.IntType(32), 0), ir.Constant(ir.IntType(32), 0)])
-#
-# print(create_list())
-#
-# def append_list(listS, value):
-#     # get the length of the list
-#     length = listS.elements[1]
-#     # get the max length of the list
-#     max_length = listS.operands[2]
-#     # get the pointer to the array
-#     ptr = listS.operands[0]
-#     # create a new array with length + 1
-#     new_array = ir.Constant(ir.ArrayType(ir.IntType(32), length + 1), [ptr, value])
-#     # update the list with the new array
-#     listS.operands[0] = new_array
-#     # update the length of the list
-#     listS.operands[1] = length + 1
-#     # update the max length of the list
-#     listS.operands[2] = max_length + 1
-#     return listS
-# print(append_list(create_list(), ir.Constant(ir.IntType(32), 10)))
-#
-# def append_list(listS, value):
-
-    # # get the length of the list
-    # length = list.operands[1]
-    # # get the max length of the list
-    # max_length = list.operands[2]
-    # # get the pointer to the array
-    # ptr = list.operands[0]
-    # # create a new array with length + 1
-    # new_array = ir.Constant(ir.ArrayType(ir.IntType(32), length + 1), [ptr, value])
-    # # update the list with the new array
-    # list.operands[0] = new_array
-    # # update the length of the list
-    # list.operands[1] = length + 1
-    # # update the max length of the list
-    # list.operands[2] = max_length + 1
-    # return list
-
+# print(module)
 

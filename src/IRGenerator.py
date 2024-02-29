@@ -5,6 +5,7 @@ from LangVisitor import LangVisitor
 from llvmlite import ir
 import llvmlite.binding as llvm
 from util import printf, print_func
+from ListStruct import *
 from arithmetic import *
 from boolean import *
 import re
@@ -22,6 +23,8 @@ def checkType(ty):
             return ir.DoubleType()
         case "BoolVar":
             return ir.IntType(1)
+        case "ListVar":
+            return list_struct
 
 def getVarVal(var, symT, addrT, builder):
     var_val = var[0]
@@ -186,7 +189,9 @@ class IRGenerator(LangVisitor):
 
     # Visit a parse tree produced by LangParser#aop1.
     def visitAop1(self, ctx:LangParser.Aop1Context):
-        return self.visit(ctx.getChild(0))
+        val = self.visit(ctx.getChild(0))
+        return getVar(val[0],val[1],self.symbol_table,self.address_table,self.builder)
+        # return self.visit(ctx.getChild(0))
 
 
     # Visit a parse tree produced by LangParser#b_op.
@@ -326,6 +331,12 @@ class IRGenerator(LangVisitor):
         return (var_name,aop_val, typ)
 
 
+    # Visit a parse tree produced by LangParser#list_var.
+    def visitList_var(self, ctx:LangParser.List_varContext):
+        var_name = self.visit(ctx.getChild(0))[0]
+        # val  = self.visit(ctx.getChild(2))[0]
+        val = self.visit(ctx.getChild(2))
+        return (var_name, val, "ListVar")
 
     # Visit a parse tree produced by LangParser#int_var.
     def visitInt_var(self, ctx:LangParser.Int_varContext):
@@ -356,9 +367,11 @@ class IRGenerator(LangVisitor):
         var_name = var_info[0]
         var_val = var_info[1]
         var_type = var_info[2]
-        var_typ = re.sub("Val","Var",var_typ)
+        var_typ = re.sub("Val","Var",var_type)
         try: 
             var_old_typ = self.symbol_table[var_name]
+            if var_typ == "ListVar":
+                raise SystemExit(f"ERROR: No List support currently")
             if (var_old_typ==var_type):
                 var_addr = self.address_table[var_name]
                 self.builder.store(var_val, var_addr)
@@ -383,7 +396,13 @@ class IRGenerator(LangVisitor):
             var_addr = self.builder.alloca(checkType(var_type), name=var_name)
             self.instr = var_addr
             self.builder.position_at_end(current_block)
-            self.builder.store(var_val, var_addr)
+            if var_typ == "ListVar":
+                self.builder.call(create_list(self.module), [var_addr])
+                append_int_list(self.module)
+                append_double_list(self.module)
+                print(var_val)
+            else:
+                self.builder.store(var_val, var_addr)
             self.address_table[var_name] = var_addr
             self.symbol_table[var_name] = var_type
         return 0
@@ -585,6 +604,22 @@ class IRGenerator(LangVisitor):
         self.builder.ret(ret_val)
 
 
+    # Visit a parse tree produced by LangParser#list.
+    def visitList(self, ctx:LangParser.ListContext):
+        size  = ctx.getChildCount()
+        if size == 2:
+            return []
+        else:
+            vals = []
+            for i in range(1,size,2):
+                val = self.visit(ctx.getChild(i))
+                if i==1:
+                    lst_typ = val[1]
+                else:
+                    if val[1] != lst_typ:
+                        raise SystemExit(f"ERROR: List elements must be of same type")
+                vals.append(val)
+            return vals
     #
     #
     # # Visit a parse tree produced by LangParser#main_func.
