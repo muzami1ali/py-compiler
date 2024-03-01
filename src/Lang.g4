@@ -72,6 +72,8 @@ float : FLOAT;
 bool : BOOL;
 break: 'break';
 continue: 'continue';
+lst_get : var '[' a_op ']';
+lst_append: var '.append' '(' a_op ')';
 
 a_op: a_op '-' aop3
     | a_op '+' aop3

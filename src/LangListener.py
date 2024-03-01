@@ -161,6 +161,24 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#lst_get.
+    def enterLst_get(self, ctx:LangParser.Lst_getContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#lst_get.
+    def exitLst_get(self, ctx:LangParser.Lst_getContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#lst_append.
+    def enterLst_append(self, ctx:LangParser.Lst_appendContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#lst_append.
+    def exitLst_append(self, ctx:LangParser.Lst_appendContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#a_op.
     def enterA_op(self, ctx:LangParser.A_opContext):
         pass
