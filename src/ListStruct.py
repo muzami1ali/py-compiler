@@ -1,5 +1,6 @@
 from llvmlite import ir
 import llvmlite.binding as llvm
+from util import printf
 
 int0 = ir.Constant(ir.IntType(32), 0)
 val_typ = ir.IntType(8)
@@ -32,8 +33,8 @@ def create_list(module):
         ptr3 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 2)])
         builder.store(ir.Constant(ir.IntType(32), 0), ptr3)
 
-        # ptr4 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
-        # builder.store(ir.Constant(ir.IntType(32), 0), ptr4)
+        ptr4 = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
+        builder.store(ir.Constant(ir.IntType(32), 0), ptr4)
 
         builder.ret_void()
     return func
@@ -91,42 +92,19 @@ def resize_list(module):
         builder.ret_void()
     return func
 
-def get_list_length(module):
-    func_typ = ir.FunctionType(ir.IntType(32), [list_struct.as_pointer()])
-    func = ir.Function(module, func_typ, name="get_list_length")
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    arg = func.args[0]
-    ptr = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
-    length = builder.load(ptr)
-    builder.ret(length)
+# def get_list_length(module):
+#     func_typ = ir.FunctionType(ir.IntType(32), [list_struct.as_pointer()])
+#     func = ir.Function(module, func_typ, name="get_list_length")
+#     block = func.append_basic_block(name="entry")
+#     builder = ir.IRBuilder(block)
+#     arg = func.args[0]
+#     ptr = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
+#     length = builder.load(ptr)
+#     builder.ret(length)
 
-def get_list_element(module):
-    func_typ = ir.FunctionType(val_typ, [list_struct.as_pointer(), ir.IntType(32)])
-    func = ir.Function(module, func_typ, name="get_list_element")
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    arg1 = func.args[0]
-    arg2 = func.args[1]
-    ptr1 = builder.gep(arg1, [int0, int0])
-    buffer = builder.load(ptr1)
-    ptr2 = builder.gep(buffer, [arg2])
-    element = builder.load(ptr2)
-    builder.ret(element)
 
-def set_list_element(module):
-    func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32), val_typ])
-    func = ir.Function(module, func_typ, name="set_list_element")
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    arg1 = func.args[0]
-    arg2 = func.args[1]
-    arg3 = func.args[2]
-    ptr1 = builder.gep(arg1, [int0, int0])
-    buffer = builder.load(ptr1)
-    ptr2 = builder.gep(buffer, [arg2])
-    builder.store(arg3, ptr2)
-    builder.ret_void()
+
+
 
 # def remove_list_element(module):
 #     func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32)])
@@ -172,6 +150,7 @@ def append_char_list(module,):
         builder.store(arg2, builder.gep(buffer, [getLength]))
         updateLength = builder.add(length, ir.Constant(ir.IntType(32), 1))
         builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+        builder.ret_void()
     return func
 
 def get_malloc(module):
@@ -181,6 +160,14 @@ def get_malloc(module):
         fty1 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(32)])
         malloc = ir.Function(module, fty1, name="malloc")
     return malloc
+
+def get_exit(module):
+    try:
+        func = module.get_global("exit")
+    except KeyError:
+        fty1 = ir.FunctionType(ir.VoidType(), [ir.IntType(32)])
+        func = ir.Function(module, fty1, name="exit")
+    return func
     
 def get_free(module):
     try:
@@ -234,6 +221,10 @@ def append_int_list(module):
 
         updateLength = builder.add(length, factor)
         builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
+
+        new_index = builder.add(index, ir.Constant(ir.IntType(32),1))
+        builder.store(new_index, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+        builder.ret_void()
     return func
 
 def append_double_list(module):
@@ -273,8 +264,170 @@ def append_double_list(module):
         updateLength = builder.add(length, factor)
         updateIndex = builder.add(index, ir.Constant(ir.IntType(32),1))
         builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
-        builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+        builder.store(updateIndex, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
 
+        builder.ret_void()
+
+    return func
+
+"""Setter functions"""
+
+def set_char_list_element(module):
+    try:
+        func = module.get_global("set_char_list_element")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32), ir.IntType(8)])
+        func = ir.Function(module, func_typ, name="set_char_list_element")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1] #index
+        arg3 = func.args[2] #val
+        max_index = builder.call(get_max_index(module), [arg1])
+        builder.call(check_index_out_of_bound(module), [arg2, max_index])
+        ptr1 = builder.gep(arg1, [int0, int0])
+        buffer_i8 = builder.load(ptr1)
+        ptr2 = builder.gep(buffer_i8, [arg2])
+        builder.store(arg3, ptr2)
+        builder.ret_void()
+    return func
+
+def set_int_list_element(module):
+    try:
+        func = module.get_global("set_int_list_element")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32), ir.IntType(32)])
+        func = ir.Function(module, func_typ, name="set_int_list_element")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1] #index
+        arg3 = func.args[2] #val
+        max_index = builder.call(get_max_index(module), [arg1])
+        builder.call(check_index_out_of_bound(module), [arg2, max_index])
+        ptr1 = builder.gep(arg1, [int0, int0])
+        buffer_i8 = builder.load(ptr1)
+        buffer_i32 = builder.bitcast(buffer_i8, ir.IntType(32).as_pointer())
+        ptr2 = builder.gep(buffer_i32, [arg2])
+        builder.store(arg3, ptr2)
+        builder.ret_void()
+    return func
+
+def set_double_list_element(module):
+    try:
+        func = module.get_global("set_double_list_element")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32), ir.DoubleType()])
+        func = ir.Function(module, func_typ, name="set_double_list_element")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1] #index
+        arg3 = func.args[2] #val
+        max_index = builder.call(get_max_index(module), [arg1])
+        builder.call(check_index_out_of_bound(module), [arg2, max_index])
+        ptr1 = builder.gep(arg1, [int0, int0])
+        buffer_i8 = builder.load(ptr1)
+        buffer_double = builder.bitcast(buffer_i8, ir.DoubleType().as_pointer())
+        ptr2 = builder.gep(buffer_double, [arg2])
+        builder.store(arg3, ptr2)
+        builder.ret_void()
+    return func
+
+def check_index_out_of_bound(module):
+    try:
+        func = module.get_global("check_index_out_of_bound")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [ir.IntType(32), ir.IntType(32)])
+        func = ir.Function(module, func_typ, name="check_index_out_of_bound")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
+        pred = builder.icmp_signed(">", arg1, arg2)
+        with builder.if_then(pred):
+            printf(builder, "Index out of bound\n", "index_error")
+            builder.call(get_exit(module), [ir.Constant(ir.IntType(32), 1)])
+            builder.ret_void()
+        builder.ret_void()
+    return func
+
+def get_max_index(module):
+    try:
+        func = module.get_global("get_max_index")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.IntType(32), [list_struct.as_pointer()])
+        func = ir.Function(module, func_typ, name="get_max_index")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg = func.args[0]
+        ptr = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
+        length = builder.load(ptr)
+        max_index = builder.sub(length, ir.Constant(ir.IntType(32), 1))
+        builder.ret(max_index)
+    return func
+
+
+"""Getter functions"""
+
+def get_char_list_element(module):
+    try:
+        func = module.get_global("get_char_list_element")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.IntType(8), [list_struct.as_pointer(), ir.IntType(32)])
+        func = ir.Function(module, func_typ, name="get_char_list_element")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
+        max_index = builder.call(get_max_index(module), [arg1])
+        builder.call(check_index_out_of_bound(module), [arg2, max_index])
+        ptr1 = builder.gep(arg1, [int0, int0])
+        buffer_i8 = builder.load(ptr1)
+        ptr2 = builder.gep(buffer_i8, [arg2])
+        val = builder.load(ptr2)
+        builder.ret(val)
+    return func
+
+def get_int_list_element(module):
+    try:
+        func = module.get_global("get_int_list_element")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.IntType(32), [list_struct.as_pointer(), ir.IntType(32)])
+        func = ir.Function(module, func_typ, name="get_int_list_element")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
+        max_index = builder.call(get_max_index(module), [arg1])
+        builder.call(check_index_out_of_bound(module), [arg2, max_index])
+        ptr1 = builder.gep(arg1, [int0, int0])
+        buffer_i8 = builder.load(ptr1)
+        buffer_i32 = builder.bitcast(buffer_i8, ir.IntType(32).as_pointer())
+        ptr2 = builder.gep(buffer_i32, [arg2])
+        val = builder.load(ptr2)
+        builder.ret(val)
+    return func
+
+def get_double_list_element(module):
+    try:
+        func = module.get_global("get_double_list_element")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.DoubleType(), [list_struct.as_pointer(), ir.IntType(32)])
+        func = ir.Function(module, func_typ, name="get_double_list_element")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg1 = func.args[0]
+        arg2 = func.args[1]
+        max_index = builder.call(get_max_index(module), [arg1])
+        builder.call(check_index_out_of_bound(module), [arg2, max_index])
+        ptr1 = builder.gep(arg1, [int0, int0])
+        buffer_i8 = builder.load(ptr1)
+        buffer_double = builder.bitcast(buffer_i8, ir.DoubleType().as_pointer())
+        ptr2 = builder.gep(buffer_double, [arg2])
+        val = builder.load(ptr2)
+        builder.ret(val)
+    return func
 
 
 # resize_func = None

@@ -372,11 +372,11 @@ class IRGenerator(LangVisitor):
             var_old_typ = self.symbol_table[var_name]
             if var_typ == "ListVar":
                 raise SystemExit(f"ERROR: No List support currently")
-            if (var_old_typ==var_type):
+            if (var_old_typ==var_typ):
                 var_addr = self.address_table[var_name]
                 self.builder.store(var_val, var_addr)
             else: 
-                raise SystemExit(f"ERROR:{var_name} changed from {var_old_typ} to {var_type} \n Details: \n {var_info}")
+                raise SystemExit(f"ERROR:{var_name} changed from {var_old_typ} to {var_typ} \n Details: \n {var_info}")
                 # var_addr = self.builder.alloca(checkType(var_type), name=var_name)
                 # self.builder.store(var_val, var_addr)
                 # self.address_table[var_name] = var_addr
@@ -393,18 +393,36 @@ class IRGenerator(LangVisitor):
                 self.builder.position_at_start(self.entry_block)
             else:
                 self.builder.position_after(self.instr)
-            var_addr = self.builder.alloca(checkType(var_type), name=var_name)
+            var_addr = self.builder.alloca(checkType(var_typ), name=var_name)
             self.instr = var_addr
             self.builder.position_at_end(current_block)
+            print(var_val[1])
             if var_typ == "ListVar":
                 self.builder.call(create_list(self.module), [var_addr])
-                append_int_list(self.module)
-                append_double_list(self.module)
-                print(var_val)
+                match var_val[1]:
+                    case "IntList":
+                        print("we are here")
+                        self.symbol_table[var_name] = "IntList"
+                        func = append_int_list(self.module)
+                        int_lst = var_val[0]
+                        for val in int_lst:
+                            self.builder.call(func, [var_addr, val[0]])
+                    case "DoubleList":
+                        self.symbol_table[var_name] = "DoubleList"
+                        func = append_double_list(self.module)
+                        double_lst = var_val[0]
+                        for val in double_lst:
+                            self.builder.call(func, [var_addr, val[0]])
+                    case "ListVar":
+                        self.symbol_table[var_name] = "ListVar"
+                # append_int_list(self.module)
+                # append_double_list(self.module)
+                # print(var_val)
             else:
                 self.builder.store(var_val, var_addr)
+                self.symbol_table[var_name] = var_typ
             self.address_table[var_name] = var_addr
-            self.symbol_table[var_name] = var_type
+            # print(self.symbol_table)
         return 0
 
 
@@ -608,7 +626,7 @@ class IRGenerator(LangVisitor):
     def visitList(self, ctx:LangParser.ListContext):
         size  = ctx.getChildCount()
         if size == 2:
-            return []
+            return ([], "ListVar")
         else:
             vals = []
             for i in range(1,size,2):
@@ -619,7 +637,92 @@ class IRGenerator(LangVisitor):
                     if val[1] != lst_typ:
                         raise SystemExit(f"ERROR: List elements must be of same type")
                 vals.append(val)
-            return vals
+            return (vals, re.sub("Val","List",lst_typ))
+
+
+    # Visit a parse tree produced by LangParser#list_get.
+    def visitList_get(self, ctx:LangParser.List_getContext):
+        lst_name = self.visit(ctx.getChild(0))[0]
+        val = self.visit(ctx.getChild(2))
+        if val[1] != "IntVal":
+            raise SystemExit(f"ERROR: List index must be an integer")
+        try:
+            lst_addr = self.address_table[lst_name]
+            lst_typ = self.symbol_table[lst_name]
+            if lst_typ == "ListVar":
+                raise SystemExit(f"ERROR: {lst_name} is empty")
+            match lst_typ:
+                case "IntList":
+                    get_func =  get_int_list_element(self.module)
+                case "DoubleList":
+                    get_func = get_double_list_element(self.module)
+            val_typ =re.sub("List","Val",lst_typ)
+            return (self.builder.call(get_func, [lst_addr, val[0]]), val_typ)
+        except KeyError:
+            raise SystemExit(f"visitList_get-->ERROR:{lst_name} has not been declared")
+
+
+
+    # Visit a parse tree produced by LangParser#list_set.
+    def visitList_set(self, ctx:LangParser.List_setContext):
+        lst_name = self.visit(ctx.getChild(0))[0]
+        index = self.visit(ctx.getChild(2))
+        val = self.visit(ctx.getChild(5))
+        if index[1] != "IntVal":
+            raise SystemExit(f"ERROR: List index must be an integer")
+        try:
+            lst_addr = self.address_table[lst_name]
+            lst_typ = self.symbol_table[lst_name]
+            if lst_typ == "ListVar":
+                raise SystemExit(f"ERROR: {lst_name} is empty")
+            match lst_typ:
+                case "IntList":
+                    if val[1] != "IntVal":
+                        raise SystemExit(f"ERROR: List elements must be of same type")
+                    set_func = set_int_list_element(self.module)
+                case "DoubleList":
+                    if val[1] != "DoubleVal":
+                        raise SystemExit(f"ERROR: List elements must be of same type")
+                    set_func = set_double_list_element(self.module)
+            self.builder.call(set_func, [lst_addr, index[0], val[0]])
+        except KeyError:
+            raise SystemExit(f"visitList_set-->ERROR:{lst_name} has not been declared")
+
+
+    # Visit a parse tree produced by LangParser#list_append.
+    def visitList_append(self, ctx:LangParser.List_appendContext):
+        lst_name = self.visit(ctx.getChild(0))[0]
+        val = self.visit(ctx.getChild(3))
+        print(self.symbol_table)
+        try:
+            lst_addr = self.address_table[lst_name]
+            lst_typ = self.symbol_table[lst_name]
+            val_typ = val[1]
+            if lst_typ == "ListVar":
+                match val_typ:
+                    case "IntVal":
+                        self.symbol_table[lst_name] = "IntList"
+                        append_func = append_int_list(self.module)
+                    case "DoubleVal":
+                        self.symbol_table[lst_name] = "DoubleList"
+                        append_func = append_double_list(self.module)
+            else:
+                match lst_typ:
+                    case "IntList":
+                        if val_typ != "IntVal":
+                            raise SystemExit(f"ERROR: List elements must be of same type")
+                        append_func = append_int_list(self.module)
+                    case "DoubleList":
+                        if val_typ != "DoubleVal":
+                            raise SystemExit(f"ERROR: List elements must be of same type")
+                        append_func = append_double_list(self.module)
+            self.builder.call(append_func, [lst_addr, val[0]])
+        except KeyError:
+            raise SystemExit(f"visitList_append-->ERROR :{lst_name} has not been declared")
+        
+
+
+
     #
     #
     # # Visit a parse tree produced by LangParser#main_func.

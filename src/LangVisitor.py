@@ -94,13 +94,18 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#lst_get.
-    def visitLst_get(self, ctx:LangParser.Lst_getContext):
+    # Visit a parse tree produced by LangParser#list_get.
+    def visitList_get(self, ctx:LangParser.List_getContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LangParser#lst_append.
-    def visitLst_append(self, ctx:LangParser.Lst_appendContext):
+    # Visit a parse tree produced by LangParser#list_set.
+    def visitList_set(self, ctx:LangParser.List_setContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#list_append.
+    def visitList_append(self, ctx:LangParser.List_appendContext):
         return self.visitChildren(ctx)
 
 

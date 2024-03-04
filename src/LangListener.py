@@ -161,21 +161,30 @@ class LangListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by LangParser#lst_get.
-    def enterLst_get(self, ctx:LangParser.Lst_getContext):
+    # Enter a parse tree produced by LangParser#list_get.
+    def enterList_get(self, ctx:LangParser.List_getContext):
         pass
 
-    # Exit a parse tree produced by LangParser#lst_get.
-    def exitLst_get(self, ctx:LangParser.Lst_getContext):
+    # Exit a parse tree produced by LangParser#list_get.
+    def exitList_get(self, ctx:LangParser.List_getContext):
         pass
 
 
-    # Enter a parse tree produced by LangParser#lst_append.
-    def enterLst_append(self, ctx:LangParser.Lst_appendContext):
+    # Enter a parse tree produced by LangParser#list_set.
+    def enterList_set(self, ctx:LangParser.List_setContext):
         pass
 
-    # Exit a parse tree produced by LangParser#lst_append.
-    def exitLst_append(self, ctx:LangParser.Lst_appendContext):
+    # Exit a parse tree produced by LangParser#list_set.
+    def exitList_set(self, ctx:LangParser.List_setContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#list_append.
+    def enterList_append(self, ctx:LangParser.List_appendContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#list_append.
+    def exitList_append(self, ctx:LangParser.List_appendContext):
         pass
 
 

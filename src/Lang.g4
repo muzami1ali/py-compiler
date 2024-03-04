@@ -61,7 +61,7 @@ ret_smt: 'return' (func_call | a_op | b_op);
 exp_block:  INDENT exp+ DEDENT ;
 exp : exp_stmt | stmt | if_statement | while_statement;
 exp_stmt: stmt NEWLINE;
-stmt: func_call | var_decl | a_op | b_op | ret_smt;
+stmt: func_call | var_decl | a_op | b_op | ret_smt | list_set | list_append | list_get;
 
 list : '[' (a_op (',' a_op)*)? ']';
 type : 'int' | 'float' | 'bool';
@@ -72,8 +72,9 @@ float : FLOAT;
 bool : BOOL;
 break: 'break';
 continue: 'continue';
-lst_get : var '[' a_op ']';
-lst_append: var '.append' '(' a_op ')';
+list_get : var '[' a_op ']';
+list_set : var '[' a_op ']' '=' a_op;
+list_append: var '.append' '(' a_op ')';
 
 a_op: a_op '-' aop3
     | a_op '+' aop3
@@ -89,6 +90,7 @@ aop2: aop1 '**' aop2
     | aop1 
     ;
 aop1: int 
+    | list_get
     | func_call
     | var
     | float
@@ -111,7 +113,7 @@ b_op : a_op '>' a_op
 func_call: var params ;
 arg: var ':' type;
 args:  '(' (arg (',' arg)* )* ')';
-param: var | a_op | b_op | func_call;
+param: var | a_op | b_op | func_call | list_get ;
 params: '(' (param (',' param)* )? ')';
 
 
