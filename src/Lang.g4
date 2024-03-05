@@ -28,8 +28,12 @@ def nextToken(self):
 }
 KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not' 
     | 'while' | 'continue' | 'break' | 'int' | 'float' | 'bool' | 'None' 
-    | 'return'
+    | 'return' | 'len' 
     ;
+STRING: //'"' '"' '"' (~'"''"''"')* '"''"''"'
+       '"' (~'"')* '"' 
+      | '\'' (~'\'')* '\'' 
+      ;
 COMMENT: '#' ~[\r\n]* -> skip;
 BOOL: 'True' | 'False';
 ID: [a-zA-Z_] [a-zA-Z0-9_]*;
@@ -63,15 +67,19 @@ exp : exp_stmt | stmt | if_statement | while_statement;
 exp_stmt: stmt NEWLINE;
 stmt: func_call | var_decl | a_op | b_op | ret_smt | list_set | list_append | list_get;
 
+len_func: 'len' '(' var ')';
 list : '[' (a_op (',' a_op)*)? ']';
 type : 'int' | 'float' | 'bool';
 ret_type: type | 'None';
+format: '.' 'format' '(' a_op (',' a_op)* ')';
+str_literal: STRING;
+str: str_literal format?;
 var : ID;
 int : INT;
 float : FLOAT;
 bool : BOOL;
-break: 'break';
-continue: 'continue';
+// break: 'break';
+//continue: 'continue';
 list_get : var '[' a_op ']';
 list_set : var '[' a_op ']' '=' a_op;
 list_append: var '.append' '(' a_op ')';
@@ -90,6 +98,7 @@ aop2: aop1 '**' aop2
     | aop1 
     ;
 aop1: int 
+    | len_func
     | list_get
     | func_call
     | var
@@ -113,7 +122,7 @@ b_op : a_op '>' a_op
 func_call: var params ;
 arg: var ':' type;
 args:  '(' (arg (',' arg)* )* ')';
-param: var | a_op | b_op | func_call | list_get ;
+param: str | len_func | var | a_op | b_op | func_call | list_get;
 params: '(' (param (',' param)* )? ')';
 
 

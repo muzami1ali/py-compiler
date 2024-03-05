@@ -80,6 +80,15 @@ class LangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LangParser#len_func.
+    def enterLen_func(self, ctx:LangParser.Len_funcContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#len_func.
+    def exitLen_func(self, ctx:LangParser.Len_funcContext):
+        pass
+
+
     # Enter a parse tree produced by LangParser#list.
     def enterList(self, ctx:LangParser.ListContext):
         pass
@@ -104,6 +113,33 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#ret_type.
     def exitRet_type(self, ctx:LangParser.Ret_typeContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#format.
+    def enterFormat(self, ctx:LangParser.FormatContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#format.
+    def exitFormat(self, ctx:LangParser.FormatContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#str_literal.
+    def enterStr_literal(self, ctx:LangParser.Str_literalContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#str_literal.
+    def exitStr_literal(self, ctx:LangParser.Str_literalContext):
+        pass
+
+
+    # Enter a parse tree produced by LangParser#str.
+    def enterStr(self, ctx:LangParser.StrContext):
+        pass
+
+    # Exit a parse tree produced by LangParser#str.
+    def exitStr(self, ctx:LangParser.StrContext):
         pass
 
 
@@ -140,24 +176,6 @@ class LangListener(ParseTreeListener):
 
     # Exit a parse tree produced by LangParser#bool.
     def exitBool(self, ctx:LangParser.BoolContext):
-        pass
-
-
-    # Enter a parse tree produced by LangParser#break.
-    def enterBreak(self, ctx:LangParser.BreakContext):
-        pass
-
-    # Exit a parse tree produced by LangParser#break.
-    def exitBreak(self, ctx:LangParser.BreakContext):
-        pass
-
-
-    # Enter a parse tree produced by LangParser#continue.
-    def enterContinue(self, ctx:LangParser.ContinueContext):
-        pass
-
-    # Exit a parse tree produced by LangParser#continue.
-    def exitContinue(self, ctx:LangParser.ContinueContext):
         pass
 
 

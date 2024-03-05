@@ -26,20 +26,40 @@ entry:
   %".18" = add i32 %".17", 50
   %".19" = bitcast [4 x i8]* @"printf_format_2" to i8*
   %".20" = call i32 (i8*, ...) @"printf"(i8* %".19", i32 %".18")
+  %".21" = call i32 @"get_list_length"({i8*, i32, i32, i32}* %"var")
+  %".22" = bitcast [4 x i8]* @"printf_format_3" to i8*
+  %".23" = call i32 (i8*, ...) @"printf"(i8* %".22", i32 %".21")
+  %".24" = bitcast [33 x i8]* @"printf_format_4" to i8*
+  %".25" = call i32 (i8*, ...) @"printf"(i8* %".24")
+  %".26" = bitcast [33 x i8]* @"printf_format_5" to i8*
+  %".27" = call i32 (i8*, ...) @"printf"(i8* %".26")
+  %".28" = call i32 @"get_int_list_element"({i8*, i32, i32, i32}* %"var", i32 0)
+  %".29" = bitcast [4 x i8]* @"printf_format_6" to i8*
+  %".30" = call i32 (i8*, ...) @"printf"(i8* %".29", i32 %".28")
+  %".31" = call i32 @"get_int_list_element"({i8*, i32, i32, i32}* %"var", i32 0)
+  %".32" = bitcast [21 x i8]* @"printf_format_7" to i8*
+  %".33" = call i32 (i8*, ...) @"printf"(i8* %".32", i32 %".31")
   call void @"create_list"({i8*, i32, i32, i32}* %"double_list")
   call void @"append_double_list"({i8*, i32, i32, i32}* %"double_list", double 0x3ff0000000000000)
   call void @"append_double_list"({i8*, i32, i32, i32}* %"double_list", double 0x3fe0000000000000)
   call void @"append_double_list"({i8*, i32, i32, i32}* %"double_list", double 0x4024000000000000)
   call void @"append_double_list"({i8*, i32, i32, i32}* %"double_list", double 0x4034000000000000)
-  %".26" = call double @"get_double_list_element"({i8*, i32, i32, i32}* %"double_list", i32 0)
-  %".27" = fadd double %".26", 0x4014000000000000
-  %".28" = bitcast [4 x i8]* @"printf_format_3" to i8*
-  %".29" = call i32 (i8*, ...) @"printf"(i8* %".28", double %".27")
-  %".30" = call double @"get_double_list_element"({i8*, i32, i32, i32}* %"double_list", i32 1)
-  %".31" = sitofp i32 5 to double
-  %".32" = fadd double %".30", %".31"
-  %".33" = bitcast [4 x i8]* @"printf_format_4" to i8*
-  %".34" = call i32 (i8*, ...) @"printf"(i8* %".33", double %".32")
+  %".39" = call double @"get_double_list_element"({i8*, i32, i32, i32}* %"double_list", i32 0)
+  %".40" = fadd double %".39", 0x4014000000000000
+  %".41" = bitcast [4 x i8]* @"printf_format_8" to i8*
+  %".42" = call i32 (i8*, ...) @"printf"(i8* %".41", double %".40")
+  %".43" = call double @"get_double_list_element"({i8*, i32, i32, i32}* %"double_list", i32 1)
+  %".44" = sitofp i32 5 to double
+  %".45" = fadd double %".43", %".44"
+  %".46" = bitcast [4 x i8]* @"printf_format_9" to i8*
+  %".47" = call i32 (i8*, ...) @"printf"(i8* %".46", double %".45")
+  %".48" = call i32 @"get_list_length"({i8*, i32, i32, i32}* %"double_list")
+  %".49" = bitcast [4 x i8]* @"printf_format_10" to i8*
+  %".50" = call i32 (i8*, ...) @"printf"(i8* %".49", i32 %".48")
+  %".51" = call i32 @"get_int_list_element"({i8*, i32, i32, i32}* %"var", i32 0)
+  %".52" = call double @"get_double_list_element"({i8*, i32, i32, i32}* %"double_list", i32 0)
+  %".53" = bitcast [87 x i8]* @"printf_format_11" to i8*
+  %".54" = call i32 (i8*, ...) @"printf"(i8* %".53", i32 %".51", double %".52")
   ret i32 0
 }
 
@@ -153,6 +173,19 @@ declare void @"exit"(i32 %".1")
 @"printf_format_0" = internal constant [4 x i8] c"%d\0a\00"
 @"printf_format_1" = internal constant [4 x i8] c"%d\0a\00"
 @"printf_format_2" = internal constant [4 x i8] c"%d\0a\00"
+define i32 @"get_list_length"({i8*, i32, i32, i32}* %".1")
+{
+entry:
+  %".3" = getelementptr {i8*, i32, i32, i32}, {i8*, i32, i32, i32}* %".1", i32 0, i32 3
+  %".4" = load i32, i32* %".3"
+  ret i32 %".4"
+}
+
+@"printf_format_3" = internal constant [4 x i8] c"%d\0a\00"
+@"printf_format_4" = internal constant [33 x i8] c"we are done with the first list\0a\00"
+@"printf_format_5" = internal constant [33 x i8] c"We are done with the first list\0a\00"
+@"printf_format_6" = internal constant [4 x i8] c"%d\0a\00"
+@"printf_format_7" = internal constant [21 x i8] c"testing f-string %d\0a\00"
 define void @"append_double_list"({i8*, i32, i32, i32}* %".1", double %".2")
 {
 entry:
@@ -196,5 +229,7 @@ entry:
   ret double %".10"
 }
 
-@"printf_format_3" = internal constant [4 x i8] c"%f\0a\00"
-@"printf_format_4" = internal constant [4 x i8] c"%f\0a\00"
+@"printf_format_8" = internal constant [4 x i8] c"%f\0a\00"
+@"printf_format_9" = internal constant [4 x i8] c"%f\0a\00"
+@"printf_format_10" = internal constant [4 x i8] c"%d\0a\00"
+@"printf_format_11" = internal constant [87 x i8] c"The first element of the  first list is: %d. The first element of the second list: %f\0a\00"

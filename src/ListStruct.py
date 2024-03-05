@@ -429,6 +429,19 @@ def get_double_list_element(module):
         builder.ret(val)
     return func
 
+def get_list_length(module):
+    try:
+        func = module.get_global("get_list_length")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.IntType(32), [list_struct.as_pointer()])
+        func = ir.Function(module, func_typ, name="get_list_length")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg = func.args[0]
+        ptr = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
+        length = builder.load(ptr)
+        builder.ret(length)
+    return func
 
 # resize_func = None
 # module = ir.Module()

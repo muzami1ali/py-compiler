@@ -49,6 +49,11 @@ class LangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LangParser#len_func.
+    def visitLen_func(self, ctx:LangParser.Len_funcContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LangParser#list.
     def visitList(self, ctx:LangParser.ListContext):
         return self.visitChildren(ctx)
@@ -61,6 +66,21 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#ret_type.
     def visitRet_type(self, ctx:LangParser.Ret_typeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#format.
+    def visitFormat(self, ctx:LangParser.FormatContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#str_literal.
+    def visitStr_literal(self, ctx:LangParser.Str_literalContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#str.
+    def visitStr(self, ctx:LangParser.StrContext):
         return self.visitChildren(ctx)
 
 
@@ -81,16 +101,6 @@ class LangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LangParser#bool.
     def visitBool(self, ctx:LangParser.BoolContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#break.
-    def visitBreak(self, ctx:LangParser.BreakContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by LangParser#continue.
-    def visitContinue(self, ctx:LangParser.ContinueContext):
         return self.visitChildren(ctx)
 
 

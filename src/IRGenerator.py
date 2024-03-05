@@ -306,7 +306,40 @@ class IRGenerator(LangVisitor):
         if (func_name == "print"):
             # self.num = print_func(self.builder,self.num,func_param)
             # print_func(self.builder,self.num,func_param, self.symbol_table, self.address_table)
-            print_func(self.builder,self.num,(vals[0],typs[0]))
+            if re.search("List",typs[0]):
+                raise SystemExit(f"PrintFunc-->ERROR: No List support currently")
+            elif typs[0] == "StrVal":
+                printf(self.builder,vals[0] + '\n',self.num)
+            elif typs[0] == "FstrVal":
+                val = vals[0]
+                str_literal = val[0]
+                args_val = val[1]
+                args_typ = val[2]
+                matches = re.findall(r"\{\w*\}",str_literal)
+                print(matches)
+                match_len = len(matches)
+                args_len = len(args_val)
+                print(str_literal)
+                print(args_val)
+                print(args_typ)
+                if (len(matches) != len(args_val)):
+                    raise SystemExit(f"PrintFunc-->ERROR: Number of arguments in string does not match number of arguments passed")
+                if len(matches) == 0:
+                    raise SystemExit(f"PrintFunc-->ERROR: No arguments found in string")
+                else:
+                    for t in args_typ:
+                        match t:
+                            case "IntVal":
+                                str_literal = re.sub("\{\w*\}", "%d",str_literal,1)
+                            case "DoubleVal":
+                                str_literal = re.sub("\{\w*\}", "%f",str_literal,1)
+                            case "BoolVal":
+                                raise SystemExit(f"PrintFunc-->ERROR: No support for bool in string format")
+                    # print(str_literal)
+                    printf(self.builder,str_literal + '\n',self.num,*args_val)
+
+            else: 
+                print_func(self.builder,self.num,(vals[0],typs[0]))
             self.num = self.num + 1
         else:
             try:
@@ -396,12 +429,10 @@ class IRGenerator(LangVisitor):
             var_addr = self.builder.alloca(checkType(var_typ), name=var_name)
             self.instr = var_addr
             self.builder.position_at_end(current_block)
-            print(var_val[1])
             if var_typ == "ListVar":
                 self.builder.call(create_list(self.module), [var_addr])
                 match var_val[1]:
                     case "IntList":
-                        print("we are here")
                         self.symbol_table[var_name] = "IntList"
                         func = append_int_list(self.module)
                         int_lst = var_val[0]
@@ -415,9 +446,7 @@ class IRGenerator(LangVisitor):
                             self.builder.call(func, [var_addr, val[0]])
                     case "ListVar":
                         self.symbol_table[var_name] = "ListVar"
-                # append_int_list(self.module)
-                # append_double_list(self.module)
-                # print(var_val)
+
             else:
                 self.builder.store(var_val, var_addr)
                 self.symbol_table[var_name] = var_typ
@@ -720,6 +749,65 @@ class IRGenerator(LangVisitor):
         except KeyError:
             raise SystemExit(f"visitList_append-->ERROR :{lst_name} has not been declared")
         
+    # Visit a parse tree produced by LangParser#len_func.
+    def visitLen_func(self, ctx:LangParser.Len_funcContext):
+        list_name = self.visit(ctx.getChild(2))[0]
+        try:
+            lst_addr = self.address_table[list_name]
+            lst_typ = self.symbol_table[list_name]
+            if lst_typ == "ListVar":
+                raise SystemExit(f"LenFunc-->ERROR: {list_name} is empty")
+            # lst_typm must contain List
+            if re.search("List",lst_typ):
+                func = get_list_length(self.module)
+                return (self.builder.call(func, [lst_addr]), "IntVal")
+            else:
+                raise SystemExit(f"LenFunc-->ERROR: {list_name} is not a list")
+
+        except KeyError:
+            raise SystemExit(f"LenFunc-->ERROR:{list_name} has not been declared")
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LangParser#str_literal.
+    def visitStr_literal(self, ctx:LangParser.Str_literalContext):
+        str_val = ctx.getText()
+        str_typ = "StrVal"
+        str_val = str_val[1:]
+        str_val = str_val[:-1]
+        # print(re.search("\{.+\}",str_val))
+        # print(str_val)
+        return (str_val, str_typ)
+
+    # Visit a parse tree produced by LangParser#str.
+    def visitStr(self, ctx:LangParser.StrContext):
+        str_literal = self.visit(ctx.getChild(0))
+        if ctx.getChildCount() == 1:
+            return (str_literal[0], "StrVal")
+        else :
+            args = self.visit(ctx.getChild(1))
+            return ((str_literal[0], args[0], args[1]), "FstrVal")
+        
+
+
+    # Visit a parse tree produced by LangParser#format.
+    def visitFormat(self, ctx:LangParser.FormatContext):
+        if ctx.getChildCount() == 4:
+            child = self.visit(ctx.getChild(3))
+            val = child[0]
+            typ = child[1]
+            return ([val], [typ])
+        else:
+            size  = ctx.getChildCount()
+            val_lst = []
+            typ_lst = []
+            for i in range(3,size,2):
+                child = self.visit(ctx.getChild(i))
+                val = child[0]
+                typ = child[1]
+                val_lst.append(val)
+                typ_lst.append(typ)
+            return (val_lst, typ_lst)
 
 
 
