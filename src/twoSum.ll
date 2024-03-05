@@ -16,10 +16,11 @@ entry:
   %"size" = alloca i32
   %"x" = alloca i32
   %"y" = alloca i32
+  %"ifvar0" = alloca i1
   %"first" = alloca i32
   %"scnd" = alloca i32
   %"sum" = alloca i32
-  %"ifvar0" = alloca i1
+  %"ifvar1" = alloca i1
   call void @"create_list"({i8*, i32, i32, i32}* %"lst")
   call void @"append_int_list"({i8*, i32, i32, i32}* %"lst", i32 2)
   call void @"append_int_list"({i8*, i32, i32, i32}* %"lst", i32 7)
@@ -41,44 +42,53 @@ while_block_0:
 end_while_block_0:
   ret i32 0
 while_block_0.1:
-  %".20" = load i32, i32* %"x"
-  %".21" = call i32 @"get_int_list_element"({i8*, i32, i32, i32}* %"lst", i32 %".20")
-  store i32 %".21", i32* %"first"
-  %".23" = load i32, i32* %"y"
-  %".24" = call i32 @"get_int_list_element"({i8*, i32, i32, i32}* %"lst", i32 %".23")
-  store i32 %".24", i32* %"scnd"
-  %".26" = load i32, i32* %"first"
-  %".27" = load i32, i32* %"scnd"
-  %".28" = add i32 %".26", %".27"
-  store i32 %".28", i32* %"sum"
   store i1 1, i1* %"ifvar0"
-  %".31" = load i32, i32* %"sum"
-  %".32" = icmp eq i32 %".31", %"target"
-  br i1 %".32", label %"if_block_0", label %"endif_block_0"
+  %".21" = load i32, i32* %"x"
+  %".22" = load i32, i32* %"y"
+  %".23" = icmp ne i32 %".21", %".22"
+  br i1 %".23", label %"if_block_0", label %"endif_block_0"
 end_while_block_0.1:
-  store i32 0, i32* %"y"
-  %".48" = load i32, i32* %"x"
-  %".49" = add i32 %".48", 1
-  store i32 %".49", i32* %"x"
-  %".51" = load i32, i32* %"x"
-  %".52" = load i32, i32* %"size"
-  %".53" = icmp slt i32 %".51", %".52"
-  br i1 %".53", label %"while_block_0", label %"end_while_block_0"
+  store i32 1, i32* %"y"
+  %".55" = load i32, i32* %"x"
+  %".56" = add i32 %".55", 1
+  store i32 %".56", i32* %"x"
+  %".58" = load i32, i32* %"x"
+  %".59" = load i32, i32* %"size"
+  %".60" = icmp slt i32 %".58", %".59"
+  br i1 %".60", label %"while_block_0", label %"end_while_block_0"
 if_block_0:
   store i1 0, i1* %"ifvar0"
-  %".35" = load i32, i32* %"x"
-  %".36" = load i32, i32* %"y"
-  %".37" = bitcast [26 x i8]* @"printf_format_0" to i8*
-  %".38" = call i32 (i8*, ...) @"printf"(i8* %".37", i32 %".35", i32 %".36")
-  ret i32 0
+  %".26" = load i32, i32* %"x"
+  %".27" = call i32 @"get_int_list_element"({i8*, i32, i32, i32}* %"lst", i32 %".26")
+  store i32 %".27", i32* %"first"
+  %".29" = load i32, i32* %"y"
+  %".30" = call i32 @"get_int_list_element"({i8*, i32, i32, i32}* %"lst", i32 %".29")
+  store i32 %".30", i32* %"scnd"
+  %".32" = load i32, i32* %"first"
+  %".33" = load i32, i32* %"scnd"
+  %".34" = add i32 %".32", %".33"
+  store i32 %".34", i32* %"sum"
+  store i1 1, i1* %"ifvar1"
+  %".37" = load i32, i32* %"sum"
+  %".38" = icmp eq i32 %".37", %"target"
+  br i1 %".38", label %"if_block_1", label %"endif_block_1"
 endif_block_0:
-  %".40" = load i32, i32* %"y"
-  %".41" = add i32 %".40", 1
-  store i32 %".41", i32* %"y"
-  %".43" = load i32, i32* %"y"
-  %".44" = load i32, i32* %"size"
-  %".45" = icmp slt i32 %".43", %".44"
-  br i1 %".45", label %"while_block_0.1", label %"end_while_block_0.1"
+  %".47" = load i32, i32* %"y"
+  %".48" = add i32 %".47", 1
+  store i32 %".48", i32* %"y"
+  %".50" = load i32, i32* %"y"
+  %".51" = load i32, i32* %"size"
+  %".52" = icmp slt i32 %".50", %".51"
+  br i1 %".52", label %"while_block_0.1", label %"end_while_block_0.1"
+if_block_1:
+  store i1 0, i1* %"ifvar1"
+  %".41" = load i32, i32* %"x"
+  %".42" = load i32, i32* %"y"
+  %".43" = bitcast [26 x i8]* @"printf_format_0" to i8*
+  %".44" = call i32 (i8*, ...) @"printf"(i8* %".43", i32 %".41", i32 %".42")
+  ret i32 0
+endif_block_1:
+  br label %"endif_block_0"
 }
 
 define void @"create_list"({i8*, i32, i32, i32}* %".1")

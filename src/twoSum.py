@@ -6,12 +6,13 @@ def twoSum(target:int)->int:
     y = 0
     while x < size:
         while y < size:
-            first = lst[x]
-            scnd = lst[y]
-            sum = first + scnd
-            if sum == target:
-                print("The indices are: [{},{}]".format(x,y))
-                return 0
+            if x!=y:
+                first = lst[x]
+                scnd = lst[y]
+                sum = first + scnd
+                if sum == target:
+                    print("The indices are: [{},{}]".format(x,y))
+                    return 0
             y = y + 1
         y = 0
         x = x + 1
