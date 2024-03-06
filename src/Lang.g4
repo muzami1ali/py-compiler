@@ -121,7 +121,7 @@ b_op : a_op '>' a_op
 
 func_call: var params ;
 arg: var ':' type;
-args:  '(' (arg (',' arg)* )* ')';
+args:  '(' arg (',' arg)* ')';
 param: str | len_func | var | a_op | b_op | func_call | list_get;
 params: '(' (param (',' param)* )? ')';
 

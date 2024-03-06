@@ -48,7 +48,7 @@ while_block_0.1:
   %".23" = icmp ne i32 %".21", %".22"
   br i1 %".23", label %"if_block_0", label %"endif_block_0"
 end_while_block_0.1:
-  store i32 1, i32* %"y"
+  store i32 0, i32* %"y"
   %".55" = load i32, i32* %"x"
   %".56" = add i32 %".55", 1
   store i32 %".56", i32* %"x"

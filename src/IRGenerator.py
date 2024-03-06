@@ -33,7 +33,7 @@ def getVarVal(var, symT, addrT, builder):
         try: 
             var_typ = symT[var_val]
         except KeyError:
-            raise SystemExit(f"ERROR:{var_val} has not been declared")
+            raise SystemExit(f"GetVarVAl-->ERROR:{var_val} has not been declared")
         param  = len(re.findall("Arg",var_typ))
         if param:
             return addrT[var]
@@ -48,7 +48,7 @@ def getVar(var, typ, symT, addrT, builder):
         try: 
             var_typ = symT[var]
         except KeyError:
-            raise SystemExit(f"ERROR:{var} has not been declared")
+            raise SystemExit(f"GetVar-->ERROR:{var} has not been declared")
         param  = len(re.findall("Arg",var_typ))
         if param:
             typ = re.sub("Arg", "Val", var_typ)
@@ -104,9 +104,6 @@ class IRGenerator(LangVisitor):
         f.write(str(self.module))
         f.close()
 
-        # print(self.address_table)
-        # print(self.symbol_table)
-        # print(self.module.functions)
         print(str(self.module))
         return 0
 
@@ -258,7 +255,7 @@ class IRGenerator(LangVisitor):
                 names.append(arg[0])
                 typs.append(arg[1])
                 irtyps.append(arg[2])
-                return (names, typs, irtyps)
+            return (names, typs, irtyps)
 
 
 
@@ -270,7 +267,7 @@ class IRGenerator(LangVisitor):
             try:
                 typ = self.symbol_table[param]
             except KeyError:
-                raise SystemExit(f"ERROR:{param} has not been declared")
+                raise SystemExit(f"Param-->ERROR:{param} has not been declared")
             arg =  len(re.findall("Arg",typ)) 
             if arg:
                 param_type = re.sub("Arg", "Val", typ)
@@ -304,8 +301,6 @@ class IRGenerator(LangVisitor):
         func_name  = self.visit(ctx.getChild(0))[0]
         vals, typs = self.visit(ctx.getChild(1))
         if (func_name == "print"):
-            # self.num = print_func(self.builder,self.num,func_param)
-            # print_func(self.builder,self.num,func_param, self.symbol_table, self.address_table)
             if re.search("List",typs[0]):
                 raise SystemExit(f"PrintFunc-->ERROR: No List support currently")
             elif typs[0] == "StrVal":
@@ -319,9 +314,6 @@ class IRGenerator(LangVisitor):
                 print(matches)
                 match_len = len(matches)
                 args_len = len(args_val)
-                print(str_literal)
-                print(args_val)
-                print(args_typ)
                 if (len(matches) != len(args_val)):
                     raise SystemExit(f"PrintFunc-->ERROR: Number of arguments in string does not match number of arguments passed")
                 if len(matches) == 0:
@@ -335,7 +327,6 @@ class IRGenerator(LangVisitor):
                                 str_literal = re.sub("\{\w*\}", "%f",str_literal,1)
                             case "BoolVal":
                                 raise SystemExit(f"PrintFunc-->ERROR: No support for bool in string format")
-                    # print(str_literal)
                     printf(self.builder,str_literal + '\n',self.num,*args_val)
 
             else: 
@@ -350,10 +341,9 @@ class IRGenerator(LangVisitor):
                 """
                 func = self.func_table[func_name]
                 arg_typs = self.args_table[func_name]
-                # print(func_param)
                 return (self.builder.call(func[0],vals), func[1])
             except KeyError:
-                raise SystemExit(f"ERROR:{func_name} has not been declared")
+                raise SystemExit(f"FuncCall-->ERROR:{func_name} has not been declared")
         return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
@@ -404,12 +394,12 @@ class IRGenerator(LangVisitor):
         try: 
             var_old_typ = self.symbol_table[var_name]
             if var_typ == "ListVar":
-                raise SystemExit(f"ERROR: No List support currently")
+                raise SystemExit(f"VarDecl-->ERROR: No List support currently")
             if (var_old_typ==var_typ):
                 var_addr = self.address_table[var_name]
                 self.builder.store(var_val, var_addr)
             else: 
-                raise SystemExit(f"ERROR:{var_name} changed from {var_old_typ} to {var_typ} \n Details: \n {var_info}")
+                raise SystemExit(f"VarDecl-->ERROR:{var_name} changed from {var_old_typ} to {var_typ} \n Details: \n {var_info}")
                 # var_addr = self.builder.alloca(checkType(var_type), name=var_name)
                 # self.builder.store(var_val, var_addr)
                 # self.address_table[var_name] = var_addr
@@ -451,7 +441,6 @@ class IRGenerator(LangVisitor):
                 self.builder.store(var_val, var_addr)
                 self.symbol_table[var_name] = var_typ
             self.address_table[var_name] = var_addr
-            # print(self.symbol_table)
         return 0
 
 
@@ -465,7 +454,6 @@ class IRGenerator(LangVisitor):
 
     def visitExp_block(self, ctx:LangParser.Exp_blockContext):
         size = ctx.getChildCount()
-        # print(size)
         for i in range(1,size-1):
             self.visit(ctx.getChild(i))
 
@@ -593,8 +581,6 @@ class IRGenerator(LangVisitor):
         func_name = self.visit(ctx.getChild(1))[0]
         names, typs, args = self.visit(ctx.getChild(2))
         return_type = self.visit(ctx.getChild(4))
-        # print(func_name)
-        print(return_type)
         func_ty = ir.FunctionType(return_type[0], args)
         func = ir.Function(self.module, func_ty, name=func_name)
         args = func.args
@@ -603,8 +589,6 @@ class IRGenerator(LangVisitor):
             arg = args[i]
             self.address_table[name] = arg
             arg.name = name
-        # func.args = args
-        print(args)
         self.func_table[func_name] = (func, return_type[2])
         self.args_table[func_name] = typs
         block = func.append_basic_block(name="entry")
@@ -641,13 +625,12 @@ class IRGenerator(LangVisitor):
     def visitRet_smt(self, ctx:LangParser.Ret_smtContext):
         func_name = self.builder.function.name
         func_return_type = self.func_table[func_name][1]
-        print(func_return_type)
         if func_name == "main":
-            raise SystemExit("ERROR: Return statement not allowed outside function")
+            raise SystemExit("RetStmt-->ERROR: Return statement not allowed outside function")
         ret = self.visit(ctx.getChild(1))
         ret_val, ret_typ = getVar(ret[0],ret[1],self.symbol_table,self.address_table,self.builder)
         if ret_typ != func_return_type:
-            raise SystemExit(f"ERROR: Return type {ret_typ} does not match function return type {func_return_type}")
+            raise SystemExit(f"RetStmt-->ERROR: Return type {ret_typ} does not match function return type {func_return_type}")
         self.builder.ret(ret_val)
 
 
@@ -664,7 +647,7 @@ class IRGenerator(LangVisitor):
                     lst_typ = val[1]
                 else:
                     if val[1] != lst_typ:
-                        raise SystemExit(f"ERROR: List elements must be of same type")
+                        raise SystemExit(f"visitList-->ERROR: List elements must be of same type")
                 vals.append(val)
             return (vals, re.sub("Val","List",lst_typ))
 
@@ -674,12 +657,12 @@ class IRGenerator(LangVisitor):
         lst_name = self.visit(ctx.getChild(0))[0]
         val = self.visit(ctx.getChild(2))
         if val[1] != "IntVal":
-            raise SystemExit(f"ERROR: List index must be an integer")
+            raise SystemExit(f"visitListGet-->ERROR: List index must be an integer")
         try:
             lst_addr = self.address_table[lst_name]
             lst_typ = self.symbol_table[lst_name]
             if lst_typ == "ListVar":
-                raise SystemExit(f"ERROR: {lst_name} is empty")
+                raise SystemExit(f"visitListGet-->ERROR: {lst_name} is empty")
             match lst_typ:
                 case "IntList":
                     get_func =  get_int_list_element(self.module)
@@ -688,7 +671,7 @@ class IRGenerator(LangVisitor):
             val_typ =re.sub("List","Val",lst_typ)
             return (self.builder.call(get_func, [lst_addr, val[0]]), val_typ)
         except KeyError:
-            raise SystemExit(f"visitList_get-->ERROR:{lst_name} has not been declared")
+            raise SystemExit(f"visitListGet-->ERROR:{lst_name} has not been declared")
 
 
 
@@ -698,31 +681,30 @@ class IRGenerator(LangVisitor):
         index = self.visit(ctx.getChild(2))
         val = self.visit(ctx.getChild(5))
         if index[1] != "IntVal":
-            raise SystemExit(f"ERROR: List index must be an integer")
+            raise SystemExit(f"visitListSet-->ERROR: List index must be an integer")
         try:
             lst_addr = self.address_table[lst_name]
             lst_typ = self.symbol_table[lst_name]
             if lst_typ == "ListVar":
-                raise SystemExit(f"ERROR: {lst_name} is empty")
+                raise SystemExit(f"visitListSet-->ERROR: {lst_name} is empty")
             match lst_typ:
                 case "IntList":
                     if val[1] != "IntVal":
-                        raise SystemExit(f"ERROR: List elements must be of same type")
+                        raise SystemExit(f"visitListSet-->ERROR: List elements must be of same type")
                     set_func = set_int_list_element(self.module)
                 case "DoubleList":
                     if val[1] != "DoubleVal":
-                        raise SystemExit(f"ERROR: List elements must be of same type")
+                        raise SystemExit(f"visitListSet-->ERROR: List elements must be of same type")
                     set_func = set_double_list_element(self.module)
             self.builder.call(set_func, [lst_addr, index[0], val[0]])
         except KeyError:
-            raise SystemExit(f"visitList_set-->ERROR:{lst_name} has not been declared")
+            raise SystemExit(f"visitListSet-->ERROR:{lst_name} has not been declared")
 
 
     # Visit a parse tree produced by LangParser#list_append.
     def visitList_append(self, ctx:LangParser.List_appendContext):
         lst_name = self.visit(ctx.getChild(0))[0]
         val = self.visit(ctx.getChild(3))
-        print(self.symbol_table)
         try:
             lst_addr = self.address_table[lst_name]
             lst_typ = self.symbol_table[lst_name]
@@ -739,15 +721,15 @@ class IRGenerator(LangVisitor):
                 match lst_typ:
                     case "IntList":
                         if val_typ != "IntVal":
-                            raise SystemExit(f"ERROR: List elements must be of same type")
+                            raise SystemExit(f"visitListAppend-->ERROR: List elements must be of same type")
                         append_func = append_int_list(self.module)
                     case "DoubleList":
                         if val_typ != "DoubleVal":
-                            raise SystemExit(f"ERROR: List elements must be of same type")
+                            raise SystemExit(f"visitListAppend-->ERROR: List elements must be of same type")
                         append_func = append_double_list(self.module)
             self.builder.call(append_func, [lst_addr, val[0]])
         except KeyError:
-            raise SystemExit(f"visitList_append-->ERROR :{lst_name} has not been declared")
+            raise SystemExit(f"visitListAppend-->ERROR :{lst_name} has not been declared")
         
     # Visit a parse tree produced by LangParser#len_func.
     def visitLen_func(self, ctx:LangParser.Len_funcContext):
@@ -775,8 +757,6 @@ class IRGenerator(LangVisitor):
         str_typ = "StrVal"
         str_val = str_val[1:]
         str_val = str_val[:-1]
-        # print(re.search("\{.+\}",str_val))
-        # print(str_val)
         return (str_val, str_typ)
 
     # Visit a parse tree produced by LangParser#str.
