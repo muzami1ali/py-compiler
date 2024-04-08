@@ -30,8 +30,7 @@ KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not'
     | 'while' | 'continue' | 'break' | 'int' | 'float' | 'bool' | 'None' 
     | 'return' | 'len' 
     ;
-STRING: //'"' '"' '"' (~'"''"''"')* '"''"''"'
-       '"' (~'"')* '"' 
+STRING:  '"' (~'"')* '"' 
       | '\'' (~'\'')* '\'' 
       ;
 COMMENT: '#' ~[\r\n]* -> skip;
@@ -43,16 +42,13 @@ FLOAT: [0-9]+ '.' [0-9]+ ;
 SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':' 
    | '_' | '.' | '%' | '|' 
     ;
-//IGNORE_NEWLINE: '\r'? '\n' {self.nesting>0}? -> skip;
 LPAREN: '(' {self.nesting += 1} ;
 RPAREN: ')' {self.nesting -= 1} ;
 LBRACK: '[' {self.nesting += 1} ;
 RBRACK: ']' {self.nesting -= 1} ;
 NEWLINE: '\r'? '\n' ' '* {self.nesting==0}? ;
-//INDENT: '    '+ | '\t';
 WS : [ ]+ -> skip ;
 LINE_ESCAPE: '\\' '\r'? '\n' -> skip ;
-//IGNORE_EOF: ~EOF;
 
 // ###########################################################
 
@@ -121,7 +117,7 @@ b_op : a_op '>' a_op
 
 func_call: var params ;
 arg: var ':' type;
-args:  '(' arg (',' arg)* ')';
+args:  '(' (arg (',' arg)*)? ')';
 param: str | len_func | var | a_op | b_op | func_call | list_get;
 params: '(' (param (',' param)* )? ')';
 
@@ -133,11 +129,6 @@ float_var: var '=' float;
 bool_var : var '=' b_op;
 
 var_decl : list_var | int_var | float_var | bool_var | aop_var;
-
-
-//main_func: 'if __name__ == "__main__" :' exp+;
-
-
 
 if_param: (( '(' b_op ')' ) | b_op ) ':';
 if: 'if' if_param exp_block;

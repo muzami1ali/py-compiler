@@ -104,7 +104,7 @@ class IRGenerator(LangVisitor):
         f.write(str(self.module))
         f.close()
 
-        print(str(self.module))
+        # print(str(self.module))
         return 0
 
 
