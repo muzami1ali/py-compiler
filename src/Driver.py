@@ -19,7 +19,7 @@ def main(argv):
             irGen = IRGenerator(argv[1], argv[2])
             irGen.visit(tree)
         else: # Directly calling driver.py
-            moduleName = (re.search("[a-zA-Z0-9]+",argv[1])).group()
+            moduleName = (re.search("[a-zA-Z0-9_-]+",argv[1])).group()
             irGen = IRGenerator(argv[1], moduleName)
             irGen.visit(tree)
 

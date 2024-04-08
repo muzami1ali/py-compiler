@@ -65,8 +65,8 @@ def getVar(var, typ, symT, addrT, builder):
 class IRGenerator(LangVisitor):
     def __init__(self, fileName, filePath):
         self.dir = filePath
-        first = re.search("[a-zA-Z0-9]+[.]py", fileName).group()
-        self.moduleName = (re.search("[a-zA-Z0-9]+",first)).group()
+        first = re.search("[a-zA-Z0-9_-]+[.]py", fileName).group()
+        self.moduleName = (re.search("[a-zA-Z0-9_-]+",first)).group()
         llvm.initialize()
         llvm.initialize_native_target()
         llvm.initialize_native_asmprinter()
