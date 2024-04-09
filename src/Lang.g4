@@ -2,6 +2,18 @@
 grammar Lang;
 
 // lexer rules 
+
+// https://github.com/yshavit/antlr-denter
+// Begin: The code below is a modified version of the code from the antlr-denter repository
+// @article{parr2013definitive,
+//   title={The definitive ANTLR 4 reference},
+//   author={Parr, Terence},
+//   journal={The Definitive ANTLR 4 Reference},
+//   pages={1--326},
+//   year={2013},
+//   publisher={The Pragmatic Bookshelf}
+// }
+// The code for nesting level in parenthesis was taken from the antlr book
 tokens { INDENT, DEDENT }
 
 @lexer::header{
@@ -26,6 +38,7 @@ def nextToken(self):
     return self.denter.next_token()
 
 }
+// End: The code above is a modified version of the code from the antlr-denter repository and the antlr book
 KWD: 'def' | 'if' | 'elif' | 'else' | 'and' | 'or' | 'not' 
     | 'while' | 'continue' | 'break' | 'int' | 'float' | 'bool' | 'None' 
     | 'return' | 'len' 
@@ -42,11 +55,14 @@ FLOAT: [0-9]+ '.' [0-9]+ ;
 SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':' 
    | '_' | '.' | '%' | '|' 
     ;
+// Begin: nesting level in parenthesis
+// Taken from the antlr book
 LPAREN: '(' {self.nesting += 1} ;
 RPAREN: ')' {self.nesting -= 1} ;
 LBRACK: '[' {self.nesting += 1} ;
 RBRACK: ']' {self.nesting -= 1} ;
 NEWLINE: '\r'? '\n' ' '* {self.nesting==0}? ;
+// End: Code taken from the antlr book
 WS : [ ]+ -> skip ;
 LINE_ESCAPE: '\\' '\r'? '\n' -> skip ;
 
