@@ -17,8 +17,8 @@ def checkType(ty):
     match ty:
         case "IntVar":
             return ir.IntType(32)
-        case "FloatVar":
-            return ir.FloatType()
+        # case "FloatVar":
+        #     return ir.FloatType()
         case "DoubleVar":
             return ir.DoubleType()
         case "BoolVar":
