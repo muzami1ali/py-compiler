@@ -13,6 +13,7 @@ import re
 true = ir.Constant(ir.IntType(1), 1)
 false = ir.Constant(ir.IntType(1), 0)
 
+# Check the type of the variable and return the corresponding ir type
 def checkType(ty): 
     match ty:
         case "IntVar":
@@ -26,6 +27,8 @@ def checkType(ty):
         case "ListVar":
             return list_struct
 
+# If typ is Var, get the value of the variable or argument and return var_val
+# else just return var_val
 def getVarVal(var, symT, addrT, builder):
     var_val = var[0]
     var_type = var[1] 
@@ -42,7 +45,7 @@ def getVarVal(var, symT, addrT, builder):
             return builder.load(addr)
     return var_val
 
-
+# Similar to getVarVal, but returns the variable value and its type
 def getVar(var, typ, symT, addrT, builder):
     if typ == "Var":
         try: 
@@ -57,7 +60,6 @@ def getVar(var, typ, symT, addrT, builder):
             typ = re.sub("Var", "Val", var_typ)
             addr = addrT[var]
             var = builder.load(addr)
-    # typ = typ1
     return (var,typ)
 
 
@@ -84,18 +86,20 @@ class IRGenerator(LangVisitor):
         block = func.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(block)
 
-        self.entry_block = block
-        self.instr = None
-        self.num = 0
-        self.if_else = -1
-        self.stack=[]
+        self.entry_block = block 
+        self.instr = None # instr is used to keep track of the last allocate instruction
+        self.num = 0 # num is used to keep track of print statements
+        self.if_else = -1 # if_else is used to keep track of if-else blocks
+        self.stack=[] # stack is used to keep track of if statements as they are nested
         
-        self.while_stmt = 0
+        self.while_stmt = 0 # while_stmt is used to keep track of while statements
 
-        self.module.triple = "arm64-apple-macosx14.0.0"
+        # self.module.triple = "arm64-apple-macosx14.0.0"
 
 
     # Visit a parse tree produced by LangParser#prog.
+    # This is the starting point of the program
+    # Writes the generated IR to a file
     def visitProg(self, ctx:LangParser.ProgContext):
         self.visit(ctx.getChild(1))
         self.builder.ret(ir.Constant(ir.IntType(32), 0))
@@ -105,42 +109,47 @@ class IRGenerator(LangVisitor):
         f.close()
 
         # print(str(self.module))
-        return 0
+        # return 0
 
 
-    # Visit a parse tree produced by LangParser#file.
+    # Visit all the children of the file
     def visitFile(self, ctx:LangParser.FileContext):
         #    RULE_ret_smt = 3
         num = ctx.getChildCount()
         for i in range(num):
             self.visit(ctx.getChild(i))
-        return 0
+        # return 0
 
 
     # Visit a parse tree produced by LangParser#exp.
+    # Visit the first child of the expression
     def visitExp(self, ctx:LangParser.ExpContext):
         if self.builder.block.is_terminated:
             raise SystemExit("ERROR: Unreachable code")
         self.visit(ctx.getChild(0)) 
-        return 0
+        # return 0
 
 
     # Visit a parse tree produced by LangParser#var.
+    # Get the variable name and return it
     def visitVar(self, ctx:LangParser.VarContext):
         return (ctx.getText(), "Var")
 
 
     # Visit a parse tree produced by LangParser#int.
+    # Get the integer value and return it as a 32 bit integer constant
     def visitInt(self, ctx:LangParser.IntContext):
         return (ir.Constant(ir.IntType(32), int(ctx.getText())), "IntVal")
 
 
     # Visit a parse tree produced by LangParser#float.
+    # Get the float value and return it as a double constant
     def visitFloat(self, ctx:LangParser.FloatContext):
         return (ir.Constant(ir.DoubleType(), float(ctx.getText())), "DoubleVal")
 
 
     # Visit a parse tree produced by LangParser#bool.
+    # Get the boolean value and return it as a 1 bit integer constant
     def visitBool(self, ctx:LangParser.BoolContext):
         bool_val = ctx.getText()
         if (bool_val == "False"):   
@@ -207,6 +216,7 @@ class IRGenerator(LangVisitor):
          
 
     # Visit a parse tree produced by LangParser#type.
+    # Get the tyoe of an argument and return the corresponding ir type
     def visitType(self, ctx:LangParser.TypeContext):
         typ = ctx.getText()
         match typ:
@@ -219,6 +229,7 @@ class IRGenerator(LangVisitor):
 
 
     # Visit a parse tree produced by LangParser#ret_type.
+    # Get the return type of a function and return the corresponding ir type
     def visitRet_type(self, ctx:LangParser.Ret_typeContext):
         typ = ctx.getText()
         match typ:
@@ -233,6 +244,8 @@ class IRGenerator(LangVisitor):
 
 
     # Visit a parse tree produced by LangParser#arg.
+    # Get the argument name and type and store it in the symbol table
+    # Return the argument name , type and ir type
     def visitArg(self, ctx:LangParser.ArgContext):
         arg = self.visit(ctx.getChild(0))
         arg_name = arg[0]
@@ -242,6 +255,7 @@ class IRGenerator(LangVisitor):
 
 
     # Visit a parse tree produced by LangParser#args.
+    # Get the arguments of a function and return their names, types and ir types
     def visitArgs(self, ctx:LangParser.ArgsContext):
         size = ctx.getChildCount()
         if size == 2:
@@ -259,6 +273,8 @@ class IRGenerator(LangVisitor):
 
 
 
+    # Visit a parse tree produced by LangParser#param.
+    # Get the parameter value and type and return it
     def visitParam(self, ctx:LangParser.ParamContext):
         child = self.visit(ctx.getChild(0))
         if child[1] == "Var":
@@ -282,6 +298,7 @@ class IRGenerator(LangVisitor):
             return child
 
     # Visit a parse tree produced by LangParser#params.
+    # Get the parameters of a function call and return their values and types
     def visitParams(self, ctx:LangParser.ParamsContext):
         size = ctx.getChildCount()
         if size == 2:
@@ -297,6 +314,9 @@ class IRGenerator(LangVisitor):
 
 
     # Visit a parse tree produced by LangParser#func_call.
+    # Get the function name and parameters of a function call
+    # If the function is print, call the print function
+    # Else, call the function and return the value
     def visitFunc_call(self, ctx:LangParser.Func_callContext):
         func_name  = self.visit(ctx.getChild(0))[0]
         vals, typs = self.visit(ctx.getChild(1))
@@ -311,9 +331,9 @@ class IRGenerator(LangVisitor):
                 args_val = val[1]
                 args_typ = val[2]
                 matches = re.findall(r"\{\w*\}",str_literal)
-                print(matches)
-                match_len = len(matches)
-                args_len = len(args_val)
+                # print(matches)
+                # match_len = len(matches)
+                # args_len = len(args_val)
                 if (len(matches) != len(args_val)):
                     raise SystemExit(f"PrintFunc-->ERROR: Number of arguments in string does not match number of arguments passed")
                 if len(matches) == 0:

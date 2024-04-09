@@ -52,28 +52,6 @@ def int_op(op,lhs,rhs,builder):
             return (pow(builder,lhs,rhs), "DoubleVal")
 
 
-# def float_op(op,lhs,rhs,builder):
-#      match op:
-#         case "+":
-#             return (builder.fadd(lhs,rhs), "FloatVal")
-#         case "-":
-#             return (builder.fsub(lhs,rhs), "FloatVal")
-#         case "/":
-#             return (builder.fdiv(lhs,rhs), "FloatVal")
-#         case "*":
-#             return (builder.fmul(lhs,rhs), "FloatVal")
-#         case "%":
-#             return (builder.frem(lhs,rhs), "FloatVal")
-#         case "//":
-#             res = builder.fdiv(lhs,rhs)
-#             resD = builder.fpext(res, ir.DoubleType())
-#             return (floor(builder,resD), "FloatVal" )
-#         case "**":
-#             lhs = builder.fpext(lhs, ir.DoubleType())
-#             rhs = builder.fpext(rhs, ir.DoubleType())
-#             return (pow(builder,lhs,rhs), "DoubleVal")
-
-
 # Double operations
 def double_op(op,lhs,rhs,builder):
      match op:
@@ -100,7 +78,7 @@ def getVarVal(var, typ, symT, addrT, builder):
         try:
             var_typ = symT[var]
         except KeyError:
-            raise Exception(f"Variable {var} not declared")
+            raise SystemExit(f"Variable {var} not declared")
         param  = len(re.findall("Arg",var_typ))
         if param:
             typ = re.sub("Arg", "Val", var_typ)
@@ -119,34 +97,20 @@ def aop(op,lhs,rhs,builder,symT,addrT):
     if rhs_typ == lhs_typ:
         if lhs_typ == "IntVal":
             return int_op(op,lhs_val,rhs_val,builder)
-        # elif lhs_typ == "FloatVal":
-        #     return float_op(op,lhs_val,rhs_val,builder)
         elif lhs_typ == "DoubleVal":
             return double_op(op,lhs_val,rhs_val,builder)
     else:
         if lhs_typ == "IntVal":
-            # if rhs_typ == "FloatVal":
-            #     lhs_val = builder.sitofp(lhs_val, ir.FloatType())
-            #     return float_op(op,lhs_val,rhs_val,builder)
             if rhs_typ == "DoubleVal":
                 lhs_val = builder.sitofp(lhs_val, ir.DoubleType())
                 return double_op(op,lhs_val,rhs_val,builder)
             else:
-                raise Exception(f"Invalid operation between {lhs_typ} and {rhs_typ}")
-
+                raise SystemExit(f"Invalid operation between {lhs_typ} and {rhs_typ}")
         elif rhs_typ == "IntVal":
-            # if lhs_typ == "FloatVal":
-            #     rhs_val = builder.sitofp(rhs_val, ir.FloatType())
-            #     return float_op(op,lhs_val,rhs_val,builder)
             if lhs_typ == "DoubleVal":
                 rhs_val = builder.sitofp(rhs_val, ir.DoubleType())
                 return double_op(op,lhs_val,rhs_val,builder)
             else:
-                raise Exception(f"Invalid operation between {lhs_typ} and {rhs_typ}")
-        # elif lhs_typ == "FloatVal":
-        #     lhs_val = builder.fpext(lhs_val, ir.DoubleType())
-        #     return double_op(op,lhs_val,rhs_val,builder)
-        # elif rhs_typ == "FloatVal":
-        #     rhs_val = builder.fpext(rhs_val, ir.DoubleType())
-        #     return double_op(op,lhs_val,rhs_val,builder)
+                raise SystemExit(f"Invalid operation between {lhs_typ} and {rhs_typ}")
+
 
