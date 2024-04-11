@@ -1,11 +1,11 @@
 ; ModuleID = "factorial"
-target triple = "arm64-apple-macosx14.0.0"
+target triple = "unknown-unknown-unknown"
 target datalayout = ""
 
 define i32 @"main"()
 {
 entry:
-  %".2" = call i32 @"factorial"(i32 5)
+  %".2" = call i32 @"factorial"(i32 10)
   %".3" = bitcast [4 x i8]* @"printf_format_0" to i8*
   %".4" = call i32 (i8*, ...) @"printf"(i8* %".3", i32 %".2")
   ret i32 0

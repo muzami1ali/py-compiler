@@ -1,5 +1,5 @@
 ; ModuleID = "fibonacci"
-target triple = "arm64-apple-macosx14.0.0"
+target triple = "unknown-unknown-unknown"
 target datalayout = ""
 
 define i32 @"main"()
