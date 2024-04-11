@@ -203,7 +203,9 @@ class IRGenerator(LangVisitor):
     # Visit a parse tree produced by LangParser#b_op.
     def visitB_op(self, ctx:LangParser.B_opContext):
         if ctx.getChildCount() == 1:
-            return self.visit(ctx.getChild(0))
+            val = self.visit(ctx.getChild(0))
+            return getVar(val[0],val[1],self.symbol_table,self.address_table,self.builder)
+            # return self.visit(ctx.getChild(0))
         if ctx.getChildCount() == 2:
             # Satisfying the not condition
             res = self.visit(ctx.getChild(1))

@@ -3,8 +3,9 @@ grammar Lang;
 
 // lexer rules 
 
-// https://github.com/yshavit/antlr-denter
 // Begin: The code below is a modified version of the code from the antlr-denter repository
+// https://github.com/yshavit/antlr-denter
+// The code for nesting level in parenthesis was taken from the antlr book
 // @article{parr2013definitive,
 //   title={The definitive ANTLR 4 reference},
 //   author={Parr, Terence},
@@ -13,7 +14,6 @@ grammar Lang;
 //   year={2013},
 //   publisher={The Pragmatic Bookshelf}
 // }
-// The code for nesting level in parenthesis was taken from the antlr book
 tokens { INDENT, DEDENT }
 
 @lexer::header{
@@ -57,6 +57,14 @@ SYM : '!' | '*' | '-' | '/' | '+' | '=' | '>' | '<' | ':'
     ;
 // Begin: nesting level in parenthesis
 // Taken from the antlr book
+// @article{parr2013definitive,
+//   title={The definitive ANTLR 4 reference},
+//   author={Parr, Terence},
+//   journal={The Definitive ANTLR 4 Reference},
+//   pages={1--326},
+//   year={2013},
+//   publisher={The Pragmatic Bookshelf}
+// }
 LPAREN: '(' {self.nesting += 1} ;
 RPAREN: ')' {self.nesting -= 1} ;
 LBRACK: '[' {self.nesting += 1} ;
@@ -90,12 +98,12 @@ var : ID;
 int : INT;
 float : FLOAT;
 bool : BOOL;
-// break: 'break';
-//continue: 'continue';
 list_get : var '[' a_op ']';
 list_set : var '[' a_op ']' '=' a_op;
 list_append: var '.append' '(' a_op ')';
 
+// a_op stands for arithmetic operation
+// It can be subdivided into a_op, aop3, aop2, aop1
 a_op: a_op '-' aop3
     | a_op '+' aop3
     | aop3
