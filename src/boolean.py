@@ -37,7 +37,6 @@ def bop(op,lhs,rhs,builder,symT,addrT):
                 return (builder.fcmp_ordered(op,lhs_val,rhs_val), "BoolVal")
             else:
                 SystemExit(f"Error: {lhs_typ} and {rhs_typ} are not compatible")
-
         elif rhs_typ == "IntVal":
             if lhs_typ == "DoubleVal":
                 rhs_val = builder.sitofp(rhs_val, ir.DoubleType())

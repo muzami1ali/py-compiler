@@ -102,6 +102,13 @@ class IRGenerator(LangVisitor):
     # Writes the generated IR to a file
     def visitProg(self, ctx:LangParser.ProgContext):
         self.visit(ctx.getChild(1))
+        ## Delete any list variables
+        func = delete_list(self.module)
+        vals = self.symbol_table.items()
+        print(vals)
+        for val in vals:
+            if re.search("List",val[1]):
+                self.builder.call(func, [self.address_table[val[0]]])
         self.builder.ret(ir.Constant(ir.IntType(32), 0))
 
         f = open(f"{self.dir}.ll", "w")
@@ -363,10 +370,16 @@ class IRGenerator(LangVisitor):
                 """
                 func = self.func_table[func_name]
                 arg_typs = self.args_table[func_name]
+                if len(arg_typs) != len(typs):
+                    raise SystemExit(f"FuncCall-->ERROR: Number of arguments in function call does not match number of arguments in function declaration")
+                for i in range(len(arg_typs)):
+                    arg_typs[i] = re.sub("Arg","Val",arg_typs[i])
+                    if arg_typs[i] != typs[i]:
+                        raise SystemExit(f"FuncCall-->ERROR: Input type {typs[i]} does not match function parameter/arg type {arg_typs[i]}")
                 return (self.builder.call(func[0],vals), func[1])
             except KeyError:
                 raise SystemExit(f"FuncCall-->ERROR:{func_name} has not been declared")
-        return 0
+        # return 0
 
     def visitAop_var(self, ctx:LangParser.Aop_varContext):
         var_name = self.visit(ctx.getChild(0))[0]
@@ -620,6 +633,13 @@ class IRGenerator(LangVisitor):
         # visit body
         self.visit(ctx.getChild(6))
         if(not self.builder.block.is_terminated):
+            ## Delete any list variables
+            func = delete_list(self.module)
+            vals = self.symbol_table.items()
+            print(vals)
+            for val in vals:
+                if re.search("List",val[1]):
+                    self.builder.call(func, [self.address_table[val[0]]])
             match return_type[1]:
                 case 'None':
                     self.builder.ret_void()
@@ -653,6 +673,13 @@ class IRGenerator(LangVisitor):
         ret_val, ret_typ = getVar(ret[0],ret[1],self.symbol_table,self.address_table,self.builder)
         if ret_typ != func_return_type:
             raise SystemExit(f"RetStmt-->ERROR: Return type {ret_typ} does not match function return type {func_return_type}")
+        ## Delete any list variables
+        func = delete_list(self.module)
+        vals = self.symbol_table.items()
+        print(vals)
+        for val in vals:
+            if re.search("List",val[1]):
+                self.builder.call(func, [self.address_table[val[0]]])
         self.builder.ret(ret_val)
 
 

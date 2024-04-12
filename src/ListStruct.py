@@ -2,18 +2,27 @@ from llvmlite import ir
 import llvmlite.binding as llvm
 from util import printf
 
+# The inspiration for this code is from https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/appendix-a-how-to-implement-a-string-type-in-llvm/index.html
+# where the author explains how to implement a string type in LLVM IR. This code is a modified version of the code from the website.
+# The code is used to implement a list structure in LLVM IR.
+
 int0 = ir.Constant(ir.IntType(32), 0)
 val_typ = ir.IntType(8)
 int_typ = ir.IntType(32)
 double_typ = ir.DoubleType()
 list_struct = ir.LiteralStructType([
                                 val_typ.as_pointer(), # pointer array element
-                                ir.IntType(32), # length of the list
+                                ir.IntType(32), # length of the list in bytes
                                 ir.IntType(32), # max length of the list
                                 ir.IntType(32) #  Number of elements
                                 ])
 
 
+################################################################################
+###################### LIST STRUCTURE FUNCTIONS#################################
+################################################################################
+
+# Create an empty list
 def create_list(module):
     try:
         func = module.get_global("create_list")
@@ -39,28 +48,34 @@ def create_list(module):
         builder.ret_void()
     return func
 
+# Delete a list
 def delete_list(module):
-    func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer()])
-    func = ir.Function(module, func_typ, name="delete_list")
-    block = func.append_basic_block(name="entry")
-    builder = ir.IRBuilder(block)
-    arg = func.args[0]
-    # get the pointer to the array
-    ptr = builder.load(builder.gep(arg, [int0, int0]))
-    # free the array
-    pred = builder.icmp_unsigned("!=", ptr, ir.Constant(val_typ.as_pointer(), None))
-    free_begin = builder.append_basic_block("free_begin")
-    free_end = builder.append_basic_block("free_end")
-    builder.cbranch(pred, free_begin, free_end)
+    try:
+        func = module.get_global("delete_list")
+    except KeyError:
+        func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer()])
+        func = ir.Function(module, func_typ, name="delete_list")
+        block = func.append_basic_block(name="entry")
+        builder = ir.IRBuilder(block)
+        arg = func.args[0]
+        # get the pointer to the array
+        ptr = builder.load(builder.gep(arg, [int0, int0]))
+        # free the array
+        pred = builder.icmp_unsigned("!=", ptr, ir.Constant(val_typ.as_pointer(), None))
+        free_begin = builder.append_basic_block("free_begin")
+        free_end = builder.append_basic_block("free_end")
+        builder.cbranch(pred, free_begin, free_end)
 
-    builder.position_at_end(free_begin)
-    builder.call(free, [ptr])
-    builder.store(ir.Constant(ir.IntType(8).as_pointer(), None), builder.gep(arg, [int0, int0]))
-    builder.branch(free_end)
+        builder.position_at_end(free_begin)
+        builder.call(get_free(module), [ptr])
+        builder.store(ir.Constant(ir.IntType(8).as_pointer(), None), builder.gep(arg, [int0, int0]))
+        builder.branch(free_end)
 
-    builder.position_at_end(free_end)
-    builder.ret_void()
+        builder.position_at_end(free_end)
+        builder.ret_void()
+    return func
 
+# Resize a list
 def resize_list(module):
     try:
         func = module.get_global("resize_list")
@@ -92,33 +107,51 @@ def resize_list(module):
         builder.ret_void()
     return func
 
-# def get_list_length(module):
-#     func_typ = ir.FunctionType(ir.IntType(32), [list_struct.as_pointer()])
-#     func = ir.Function(module, func_typ, name="get_list_length")
-#     block = func.append_basic_block(name="entry")
-#     builder = ir.IRBuilder(block)
-#     arg = func.args[0]
-#     ptr = builder.gep(arg, [int0, ir.Constant(ir.IntType(32), 3)])
-#     length = builder.load(ptr)
-#     builder.ret(length)
+################################################################################
+###################### HELPER FUNCTIONS ########################################
+################################################################################
 
+# Get the malloc function
+def get_malloc(module):
+    try:
+        malloc = module.get_global("malloc")
+    except KeyError:
+        fty1 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(32)])
+        malloc = ir.Function(module, fty1, name="malloc")
+    return malloc
 
+# Get the exit function
+def get_exit(module):
+    try:
+        func = module.get_global("exit")
+    except KeyError:
+        fty1 = ir.FunctionType(ir.VoidType(), [ir.IntType(32)])
+        func = ir.Function(module, fty1, name="exit")
+    return func
 
+# Get the free function
+def get_free(module):
+    try:
+        free = module.get_global("free")
+    except KeyError:
+        fty2 = ir.FunctionType(ir.VoidType(), [ir.IntType(8).as_pointer()])
+        free = ir.Function(module, fty2, name="free")
+    return free
 
+# Get the memcpy function
+def get_memcpy(module):
+    try:
+        memcpy = module.get_global("memcpy")
+    except KeyError:
+        fty3 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(8).as_pointer(), ir.IntType(8).as_pointer(), ir.IntType(32)])
+        memcpy = ir.Function(module, fty3, name="memcpy")
+    return memcpy
 
-# def remove_list_element(module):
-#     func_typ = ir.FunctionType(ir.VoidType(), [list_struct.as_pointer(), ir.IntType(32)])
-#     func = ir.Function(module, func_typ, name="remove_list_element")
-#     block = func.append_basic_block(name="entry")
-#     builder = ir.IRBuilder(block)
-#     arg1 = func.args[0]
-#     arg2 = func.args[1]
-#     ptr1 = builder.gep(arg1, [int0, int0])
-#     buffer = builder.load(ptr1)
-#     ptr2 = builder.gep(buffer, [arg2])
-#     builder.store(ir.Constant(val_typ, 0), ptr2)
-#     builder.ret_void()
+################################################################################
+###################### APPEND FUNCTIONS ########################################
+################################################################################
 
+# Append a character to a list
 def append_char_list(module,):
     try:
         func = module.get_global("append_char_list")
@@ -139,7 +172,7 @@ def append_char_list(module,):
         pred = builder.icmp_unsigned("==", length, max_length)
         builder.cbranch(pred, grow_begin, grow_end)
         builder.position_at_end(grow_begin)
-        # factor = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+
         factor = ir.Constant(ir.IntType(32), 1)
         sum = builder.add(factor, max_length)
         builder.call(resize_list(module), [arg1, sum])
@@ -153,38 +186,7 @@ def append_char_list(module,):
         builder.ret_void()
     return func
 
-def get_malloc(module):
-    try:
-        malloc = module.get_global("malloc")
-    except KeyError:
-        fty1 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(32)])
-        malloc = ir.Function(module, fty1, name="malloc")
-    return malloc
-
-def get_exit(module):
-    try:
-        func = module.get_global("exit")
-    except KeyError:
-        fty1 = ir.FunctionType(ir.VoidType(), [ir.IntType(32)])
-        func = ir.Function(module, fty1, name="exit")
-    return func
-    
-def get_free(module):
-    try:
-        free = module.get_global("free")
-    except KeyError:
-        fty2 = ir.FunctionType(ir.VoidType(), [ir.IntType(8).as_pointer()])
-        free = ir.Function(module, fty2, name="free")
-    return free
-
-def get_memcpy(module):
-    try:
-        memcpy = module.get_global("memcpy")
-    except KeyError:
-        fty3 = ir.FunctionType(ir.IntType(8).as_pointer(), [ir.IntType(8).as_pointer(), ir.IntType(8).as_pointer(), ir.IntType(32)])
-        memcpy = ir.Function(module, fty3, name="memcpy")
-    return memcpy
-
+# Append an integer to a list
 def append_int_list(module):
     try:
         func = module.get_global("append_int_list")
@@ -205,7 +207,7 @@ def append_int_list(module):
         pred = builder.icmp_unsigned("==", length, max_length)
         builder.cbranch(pred, grow_begin, grow_end)
         builder.position_at_end(grow_begin)
-        # factor = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+
         factor = ir.Constant(ir.IntType(32), 4)
         sum = builder.add(factor, max_length)
         builder.call(resize_list(module), [arg1, sum])
@@ -227,6 +229,7 @@ def append_int_list(module):
         builder.ret_void()
     return func
 
+# Append a double to a list
 def append_double_list(module):
     try:
         func = module.get_global("append_double_list")
@@ -247,7 +250,7 @@ def append_double_list(module):
         pred = builder.icmp_unsigned("==", length, max_length)
         builder.cbranch(pred, grow_begin, grow_end)
         builder.position_at_end(grow_begin)
-        # factor = builder.load(builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 3)]))
+
         factor = ir.Constant(ir.IntType(32), 8)
         sum = builder.add(factor, max_length)
         builder.call(resize_list(module), [arg1, sum])
@@ -260,7 +263,7 @@ def append_double_list(module):
         buffer_double = builder.bitcast(buffer_i8, ir.DoubleType().as_pointer())
 
         builder.store(arg2, builder.gep(buffer_double, [index]))
-        # #
+         
         updateLength = builder.add(length, factor)
         updateIndex = builder.add(index, ir.Constant(ir.IntType(32),1))
         builder.store(updateLength, builder.gep(arg1, [int0, ir.Constant(ir.IntType(32), 1)]))
@@ -270,8 +273,11 @@ def append_double_list(module):
 
     return func
 
-"""Setter functions"""
+################################################################################
+###################### SETTER FUNCTIONS ########################################
+################################################################################
 
+# Set a character in a list at the specified index
 def set_char_list_element(module):
     try:
         func = module.get_global("set_char_list_element")
@@ -292,6 +298,7 @@ def set_char_list_element(module):
         builder.ret_void()
     return func
 
+# Set an integer in a list at the specified index
 def set_int_list_element(module):
     try:
         func = module.get_global("set_int_list_element")
@@ -313,6 +320,7 @@ def set_int_list_element(module):
         builder.ret_void()
     return func
 
+# Set a double in the list at the specified index
 def set_double_list_element(module):
     try:
         func = module.get_global("set_double_list_element")
@@ -334,6 +342,8 @@ def set_double_list_element(module):
         builder.ret_void()
     return func
 
+# Check if the index is out of bound
+# If it is, print an error message and exit
 def check_index_out_of_bound(module):
     try:
         func = module.get_global("check_index_out_of_bound")
@@ -352,6 +362,7 @@ def check_index_out_of_bound(module):
         builder.ret_void()
     return func
 
+# Get the maximum index of the list
 def get_max_index(module):
     try:
         func = module.get_global("get_max_index")
@@ -368,8 +379,11 @@ def get_max_index(module):
     return func
 
 
-"""Getter functions"""
+################################################################################
+###################### GETTER FUNCTIONS ########################################
+################################################################################
 
+# Get a character from the list at the specified index
 def get_char_list_element(module):
     try:
         func = module.get_global("get_char_list_element")
@@ -389,6 +403,7 @@ def get_char_list_element(module):
         builder.ret(val)
     return func
 
+# Get an integer from the list at the specified index
 def get_int_list_element(module):
     try:
         func = module.get_global("get_int_list_element")
@@ -409,6 +424,7 @@ def get_int_list_element(module):
         builder.ret(val)
     return func
 
+# Get a double from the list at the specified index
 def get_double_list_element(module):
     try:
         func = module.get_global("get_double_list_element")
@@ -429,6 +445,8 @@ def get_double_list_element(module):
         builder.ret(val)
     return func
 
+# Get the length of the list 
+# These are the number of elements in the list
 def get_list_length(module):
     try:
         func = module.get_global("get_list_length")
@@ -442,25 +460,4 @@ def get_list_length(module):
         length = builder.load(ptr)
         builder.ret(length)
     return func
-
-# resize_func = None
-# module = ir.Module()
-# fty1 = ir.FunctionType(val_typ.as_pointer(), [ir.IntType(32)])
-# malloc = ir.Function(module, fty1, name="malloc")
-# add free function
-# fty2 = ir.FunctionType(ir.VoidType(), [val_typ.as_pointer()])
-# free = ir.Function(module, fty2, name="free")
-# add memcopy function
-# fty3 = ir.FunctionType(val_typ.as_pointer(), [val_typ.as_pointer(), val_typ.as_pointer(), ir.IntType(32)])
-# memcpy = ir.Function(module, fty3, name="memcpy")
-# create_list(module)
-# delete_list(module)
-# resize_list(module)
-# append_list(module)
-# get_list_length(module)
-# get_list_element(module)
-# set_list_element(module)
-# fty2 = ir.FunctionType(ir.VoidType(), [ir.IntType(32).as_pointer()])
-# free = ir.Function(module, fty2, name="free")
-# print(module)
 

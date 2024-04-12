@@ -1,5 +1,5 @@
 ; ModuleID = "twoSum"
-target triple = "arm64-apple-macosx14.0.0"
+target triple = "unknown-unknown-unknown"
 target datalayout = ""
 
 define i32 @"main"()
@@ -40,6 +40,7 @@ while_block_0:
   %".18" = icmp slt i32 %".16", %".17"
   br i1 %".18", label %"while_block_0.1", label %"end_while_block_0.1"
 end_while_block_0:
+  call void @"delete_list"({i8*, i32, i32, i32}* %"lst")
   ret i32 0
 while_block_0.1:
   store i1 1, i1* %"ifvar0"
@@ -49,13 +50,13 @@ while_block_0.1:
   br i1 %".23", label %"if_block_0", label %"endif_block_0"
 end_while_block_0.1:
   store i32 0, i32* %"y"
-  %".55" = load i32, i32* %"x"
-  %".56" = add i32 %".55", 1
-  store i32 %".56", i32* %"x"
-  %".58" = load i32, i32* %"x"
-  %".59" = load i32, i32* %"size"
-  %".60" = icmp slt i32 %".58", %".59"
-  br i1 %".60", label %"while_block_0", label %"end_while_block_0"
+  %".56" = load i32, i32* %"x"
+  %".57" = add i32 %".56", 1
+  store i32 %".57", i32* %"x"
+  %".59" = load i32, i32* %"x"
+  %".60" = load i32, i32* %"size"
+  %".61" = icmp slt i32 %".59", %".60"
+  br i1 %".61", label %"while_block_0", label %"end_while_block_0"
 if_block_0:
   store i1 0, i1* %"ifvar0"
   %".26" = load i32, i32* %"x"
@@ -73,19 +74,20 @@ if_block_0:
   %".38" = icmp eq i32 %".37", %"target"
   br i1 %".38", label %"if_block_1", label %"endif_block_1"
 endif_block_0:
-  %".47" = load i32, i32* %"y"
-  %".48" = add i32 %".47", 1
-  store i32 %".48", i32* %"y"
-  %".50" = load i32, i32* %"y"
-  %".51" = load i32, i32* %"size"
-  %".52" = icmp slt i32 %".50", %".51"
-  br i1 %".52", label %"while_block_0.1", label %"end_while_block_0.1"
+  %".48" = load i32, i32* %"y"
+  %".49" = add i32 %".48", 1
+  store i32 %".49", i32* %"y"
+  %".51" = load i32, i32* %"y"
+  %".52" = load i32, i32* %"size"
+  %".53" = icmp slt i32 %".51", %".52"
+  br i1 %".53", label %"while_block_0.1", label %"end_while_block_0.1"
 if_block_1:
   store i1 0, i1* %"ifvar1"
   %".41" = load i32, i32* %"x"
   %".42" = load i32, i32* %"y"
   %".43" = bitcast [26 x i8]* @"printf_format_0" to i8*
   %".44" = call i32 (i8*, ...) @"printf"(i8* %".43", i32 %".41", i32 %".42")
+  call void @"delete_list"({i8*, i32, i32, i32}* %"lst")
   ret i32 0
 endif_block_1:
   br label %"endif_block_0"
@@ -207,3 +209,18 @@ declare i32 @"printf"(i8* %".1", ...)
 declare void @"exit"(i32 %".1")
 
 @"printf_format_0" = internal constant [26 x i8] c"The indices are: [%d,%d]\0a\00"
+define void @"delete_list"({i8*, i32, i32, i32}* %".1")
+{
+entry:
+  %".3" = getelementptr {i8*, i32, i32, i32}, {i8*, i32, i32, i32}* %".1", i32 0, i32 0
+  %".4" = load i8*, i8** %".3"
+  %".5" = icmp ne i8* %".4", null
+  br i1 %".5", label %"free_begin", label %"free_end"
+free_begin:
+  call void @"free"(i8* %".4")
+  %".8" = getelementptr {i8*, i32, i32, i32}, {i8*, i32, i32, i32}* %".1", i32 0, i32 0
+  store i8* null, i8** %".8"
+  br label %"free_end"
+free_end:
+  ret void
+}
