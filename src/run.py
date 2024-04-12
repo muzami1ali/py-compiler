@@ -7,3 +7,4 @@ pwd = os.getcwd()
 os.system(f"python ./Driver.py {pwd}/{sys.argv[1]} {pwd}/{name}")
 
 os.system(f"clang {name}.ll -o {name}")
+os.system(f"./{name}")

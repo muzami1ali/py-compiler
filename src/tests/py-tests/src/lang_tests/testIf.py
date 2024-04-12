@@ -1,3 +1,8 @@
+# Run-time:
+#   stdout:
+#      30
+#      100
+#      False
 
 if(True):
     print(10+20)

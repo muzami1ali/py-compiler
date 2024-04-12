@@ -1,6 +1,11 @@
-# Ref:Numba
+
 from llvmlite import ir
 
+# This file contains the utility functions that are used in the code generation
+# process. The functions are used to generate the LLVM IR code for the print
+# statements in the source code.
+# https://github.com/numba/numba/blob/03f2722e624d46223e3c95bc3910905b72d9a24d/numba/core/cgutils.py#L1116
+# Begin: Modified code from Numba
 int1_t = ir.IntType(1)
 int8_t = ir.IntType(8)
 int32_t = ir.IntType(32)
@@ -58,19 +63,6 @@ def printf(builder, format, num, *args):
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt] + list(args))
 
-def print_func(builder, num, func_param):
-    val = func_param[0] # It is a tuple
-    typ = func_param[1]
-    if typ=="IntVal":
-        printf(builder, "%d\n", num, val)
-    elif typ=="FloatVal":
-        res = builder.fpext(val, ir.DoubleType())
-        printf(builder, "%f\n", num, res)
-    elif typ=="DoubleVal":
-        printf(builder, "%f\n", num, val)
-    elif typ=="BoolVal":
-        print_bool(builder, val)
-
 def printb(builder, format):
     assert isinstance(format, str)
     mod = builder.module
@@ -90,10 +82,27 @@ def printb(builder, format):
     # Call
     ptr_fmt = builder.bitcast(global_fmt, cstring)
     return builder.call(fn, [ptr_fmt])
+# End: Modified code from Numba
+################################################################################
 
+# This function is used to print the values
+def print_func(builder, num, func_param):
+    val = func_param[0] # It is a tuple
+    typ = func_param[1]
+    if typ=="IntVal":
+        printf(builder, "%d\n", num, val)
+    elif typ=="FloatVal":
+        res = builder.fpext(val, ir.DoubleType())
+        printf(builder, "%f\n", num, res)
+    elif typ=="DoubleVal":
+        printf(builder, "%f\n", num, val)
+    elif typ=="BoolVal":
+        print_bool(builder, val)
+
+
+# This function is used to print the boolean values
 def print_bool(sbuilder, res):
     mod = sbuilder.module
-  
     func_typ = ir.FunctionType(int32_t, [int1_t])
 
     try:
