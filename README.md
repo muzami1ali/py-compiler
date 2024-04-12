@@ -1,6 +1,8 @@
 # py-compiler
 This project builds an ahead-of-time compiler for Python
 
+Thsi was built on macos so should also work on linux.1
+
 ## Requirments
 Before running this compiler you will need to install some packages
 Firstly make sure that you have python 3 installed.
