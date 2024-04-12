@@ -3,8 +3,8 @@ import llvmlite.binding as llvm
 from util import printf
 
 # The inspiration for this code is from https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/appendix-a-how-to-implement-a-string-type-in-llvm/index.html
-# where the author explains how to implement a string type in LLVM IR. This code is a modified version of the code from the website.
-# The code is used to implement a list structure in LLVM IR.
+# where the author explains how to implement a string type in LLVM IR.
+# The code below is used to implement a list structure in LLVM IR.
 
 int0 = ir.Constant(ir.IntType(32), 0)
 val_typ = ir.IntType(8)
